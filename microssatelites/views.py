@@ -129,6 +129,7 @@ def index(request):
             print('================================================================')
             dataStatistics = DataStatistic.objects.filter(project=project)
             projectdata = ProjectData.get_data(project.pk)
+
             totalDataStatistic = DataStatistic.get_total_data_statistic(project.pk)
             return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic})
     else:
@@ -152,6 +153,16 @@ def handle_uploaded_file(f, directory):
         destination.write(chunk)
     destination.close()
     return JsonResponse({'status': 'success'})
+
+def dadosGrafico(request):
+    projectdata = ProjectData.get_data(57)
+    lista = []
+    for i in projectdata:
+        lista.append(i)
+    return render(request,'datateste.html', {'lista': lista})
+
+
+
 
 def extractSummary(file, project):
     perfeitos = 0

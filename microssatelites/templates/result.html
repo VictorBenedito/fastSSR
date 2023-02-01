@@ -231,7 +231,8 @@
                         <!-- Card Body -->
                         <div class="card-body">
                             <div>
-                                <canvas id="imperfCodxImperfNCodChart"></canvas>
+                                {% comment %} <canvas id="imperfCodxImperfNCodChart"></canvas> {% endcomment %}
+                                <canvas id="perfxImperfChart"></canvas>
                             </div>
                             <hr>
                             (Colocar informações sobre o Gráfico)
@@ -271,15 +272,15 @@
                     </div>
                 </div>
             </div>
-            <div class="row">
-                <!-- GRÁFICO 07 - Codificantes x Não Codificantes-->
-                <div class="col-3">
+            <div class="row justify-content-center">
+                <!-- GRÁFICO 08 -->
+                <div class="col-12">
                     <div class="card shadow mb-4">
                         <!-- Card Header - Dropdown -->
                         <div class="card-header py-3">
                             <div class="row align-items-center">
                                 <div class="col-10">
-                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Gráfico de Barras</h6>
+                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Codificantes x Não Codificantes</h6>
                                 </div>
                                 <div class="col-2 text-end">
                                     <a class="dropdown" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -296,7 +297,7 @@
                         <!-- Card Body -->
                         <div class="card-body">
                             <div>
-                                <canvas id="barChart"></canvas>
+                                <canvas id="bar"></canvas>
                             </div>
                             <hr>
                             (Colocar informações sobre o Gráfico)
@@ -488,229 +489,7 @@
                 </div>
             </div>
         </div>
-        {% comment %} <div class="container">
-            <div class="row">
-                <!-- COLUNA ESQUERDA-->
-                <div class="col-xl-8 col-mb-12" style="background-color: #77777;">
-                    <h1>Título</h1>
-                    <table id="example" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>Motif</th>
-                                <th>Iterations</th>
-                                <th>Cepa</th>
-                                <th>Frequency</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for data in projectdata %}
-                            <tr>
-                                <td>{{ data.1 }}</td>
-                                <td>{{ data.2 }}</td>
-                                <td>{{ data.3 }}</td>
-                                <td>{{ data.0 }}</td>
-                            </tr>
-                            {% endfor %}       
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>Motif</th>
-                                <th>Iterations</th>
-                                <th>Cepa</th>
-                                <th>Left Flanking</th>
-                                <th>Right Flanking</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-
-                <!-- COLUNA DIREITA-->
-                <div class="col-xl-4 col-md-4" style="background-color: #001E5A; padding:33px; color: #FFFFFF; text-allingment:center;">
-                    <h1>Graphics</h1>
-                    <hr style="color:#FFFFFF">
-                    <br>
-                    <canvas id="myChart"></canvas>
-                    <hr style="color:#FFFFFF">
-                </div>
-            </div>
-            <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
-                <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Data</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Grafics</button>
-                </li>
-                <li class="nav-item" role="presentation">
-                <button class="nav-link" id="pills-contact-tab" data-bs-toggle="pill" data-bs-target="#pills-contact" type="button" role="tab" aria-controls="pills-contact" aria-selected="false">Statistics Data</button>
-                </li>
-            </ul>
-            <div class="tab-content" id="pills-tabContent">
-                <!-- Aba da Tabela dos Dados -->
-                <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
-                    <table id="example" class="display" style="width:100%">
-                        <thead>
-                            <tr>
-                                <th>Motif</th>
-                                <th>Iterations</th>
-                                <th>Cepa</th>
-                                <th>Left Flanking</th>
-                                <th>Right Flanking</th>
-                                <th>Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for data in projectdata %}
-                            <tr>
-                                <td>{{ data.1 }}</td>
-                                <td>{{ data.2 }}</td>
-                                <td>{{ data.3 }}</td>
-                                <td>{{ data.4 }}</td>
-                                <td>{{ data.5 }}</td>
-                                <td>{{ data.0 }}</td>
-                            </tr>
-                            {% endfor %}       
-                        </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>Motif</th>
-                                <th>Iterations</th>
-                                <th>Cepa</th>
-                                <th>Left Flanking</th>
-                                <th>Right Flanking</th>
-                            </tr>
-                        </tfoot>
-                    </table>
-                </div>
-                
-                <!-- Aba da Gráficos -->
-                <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
-                    <!-- Donut Chart Estatística-->
-                    <div class="col-xl-4 col-lg-5">
-                        <div class="card shadow mb-4">
-                            <!-- Card Header - Dropdown -->
-                            <div class="card-header py-3">
-                                <h6 class="m-0 font-weight-bold text-primary">Donut Chart</h6>
-                            </div>
-                            <!-- Card Body -->
-                            <div class="card-body">
-                                <div>
-                                    <canvas id="myChart"></canvas>
-                                </div>
-                                <hr>
-                                Styling for the donut chart can be found in the
-                                <!-- <code>/js/demo/chart-pie-demo.js</code> file. -->
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- Aba da Tabela do Dados Estatísticos -->
-                <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">
-                    <div class="table-responsive">
-                        <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
-                            <thead>
-                                <tr>
-                                    <th>Cepa</th>
-                                    <th>Total SSR</th>
-                                    <th>Total Codificante</th>
-                                    <th>Total Não Codificante</th>
-                                    <th>Mono</th>
-                                    <th>Di</th>
-                                    <th>Tri</th>
-                                    <th>Tetra</th>
-                                    <th>Penta</th>
-                                    <th>Hexa</th>
-                                    <th>Total Perfeitos</th>
-                                    <th>Total Perfeitos Codificantes</th>
-                                    <th>Total Perfeitos Não Codificantes</th>
-                                    <th>Perfeito Mono</th>
-                                    <th>Perfeito Di</th>
-                                    <th>Perfeito Tri</th>
-                                    <th>Perfeito Tetra</th>
-                                    <th>Perfeito Penta</th>
-                                    <th>Perfeito Hexa</th>
-                                    <th>Total Imperfeitos</th>
-                                    <th>Total Imperfeitos Codificantes</th>
-                                    <th>Total Imperfeitos Não Codificantes</th>
-                                    <th>Imperfeitos Mono</th>
-                                    <th>Imperfeitos Di</th>
-                                    <th>Imperfeitos Tri</th>
-                                    <th>Imperfeitos Tetra</th>
-                                    <th>Imperfeitos Penta</th>
-                                    <th>Imperfeitos Hexa</th>
-                                </tr>
-                            </thead>
-                            <tfoot>
-                                <tr>
-                                <th>Cepa</th>
-                                <th>Total SSR</th>
-                                <th>Total Codificante</th>
-                                <th>Total Não Codificante</th>
-                                <th>Mono</th>
-                                <th>Di</th>
-                                <th>Tri</th>
-                                <th>Tetra</th>
-                                <th>Penta</th>
-                                <th>Hexa</th>
-                                <th>Total Perfeitos</th>
-                                <th>Total Perfeitos Codificantes</th>
-                                <th>Total Perfeitos Não Codificantes</th>
-                                <th>Perfeito Mono</th>
-                                <th>Perfeito Di</th>
-                                <th>Perfeito Tri</th>
-                                <th>Perfeito Tetra</th>
-                                <th>Perfeito Penta</th>
-                                <th>Perfeito Hexa</th>
-                                <th>Total Imperfeitos</th>
-                                <th>Total Imperfeitos Codificantes</th>
-                                <th>Total Imperfeitos Não Codificantes</th>
-                                <th>Imperfeitos Mono</th>
-                                <th>Imperfeitos Di</th>
-                                <th>Imperfeitos Tri</th>
-                                <th>Imperfeitos Tetra</th>
-                                <th>Imperfeitos Penta</th>
-                                <th>Imperfeitos Hexa</th>
-                                </tr>
-                            </tfoot>
-                            <tbody>
-                            {% for dataStatistic in dataStatistics %}
-                                <tr>
-                                <td>{{ dataStatistic.cepa }}</td>
-                                <td>{{ dataStatistic.totalSSR }}</td>
-                                <td>{{ dataStatistic.totalCodificante }}</td>
-                                <td>{{ dataStatistic.totalNaoCodificante }}</td>
-                                <td>{{ dataStatistic.mono }}</td>
-                                <td>{{ dataStatistic.di }}</td>
-                                <td>{{ dataStatistic.tri }}</td>
-                                <td>{{ dataStatistic.tetra }}</td>
-                                <td>{{ dataStatistic.penta }}</td>
-                                <td>{{ dataStatistic.hexa }}</td>
-                                <td>{{ dataStatistic.totalPerfeitos }}</td>
-                                <td>{{ dataStatistic.totalPerfeitosCodificantes }}</td>
-                                <td>{{ dataStatistic.totalPerfeitosNaoCodificantes }}</td>
-                                <td>{{ dataStatistic.perfeitoMono }}</td>
-                                <td>{{ dataStatistic.perfeitoDi }}</td>
-                                <td>{{ dataStatistic.perfeitoTri }}</td>
-                                <td>{{ dataStatistic.perfeitoTetra }}</td>
-                                <td>{{ dataStatistic.perfeitoPenta }}</td>
-                                <td>{{ dataStatistic.perfeitoHexa }}</td>
-                                <td>{{ dataStatistic.totalImperfeitos }}</td>
-                                <td>{{ dataStatistic.totalImperfeitosCodificantes }}</td>
-                                <td>{{ dataStatistic.totalImperfeitosNaoCodificantes }}</td>
-                                <td>{{ dataStatistic.imperfeitoMono }}</td>
-                                <td>{{ dataStatistic.imperfeitoDi }}</td>
-                                <td>{{ dataStatistic.imperfeitoTri }}</td>
-                                <td>{{ dataStatistic.imperfeitoTetra }}</td>
-                                <td>{{ dataStatistic.imperfeitoPenta }}</td>
-                                <td>{{ dataStatistic.imperfeitoHexa }}</td>
-                                </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>       
-        </div> {% endcomment %}
-
+        
         <!-- Bootstrap Bundle with Popper -->
         {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.min.js"></script> {% endcomment %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
@@ -744,8 +523,9 @@
             const graphic5 = document.getElementById('perfCodxPerfNCodChart');  
             const graphic6 = document.getElementById('imperfCodxImperfNCodChart');  
             const graphic7 = document.getElementById('codxNCodChart');
-            const graphic8 = document.getElementById('barChart)');
-            
+            const graphic8 = document.getElementById('bar');
+
+            {% comment %}
             const chart1 = new Chart(graphic1, {
                 type: 'doughnut',
                 data: {
@@ -770,20 +550,21 @@
                     }*/
                 }
             });
-
+            {% endcomment %}
             const chart2 = new Chart(graphic2, {
                 type: 'doughnut',
                 data: {
                     labels: ['Perfeitos', 'Imperfeitos'],
                     datasets: [{
                         label: 'Total',
-                        data: [{{ totalDataStatistic.0.6 }}, {{ totalDataStatistic.0.7 }}],
+                        {% comment %} data: [{{ totalDataStatistic.0.6 }}, {{ totalDataStatistic.0.7 }}], {% endcomment %}
+                        data:[10,20],
                         borderWidth: 1,
                         hoverOffset: 4
                     }]
                 },
             });
-            
+            {% comment %}
             const chart3 = new Chart(graphic3, {
                 type: 'doughnut',
                 data: {
@@ -822,7 +603,7 @@
                     }]
                 },
             });
-
+            
             const chart6 = new Chart(graphic6, {
                 type: 'doughnut',
                 data: {
@@ -848,48 +629,61 @@
                     }]
                 },
             });
-
+            {% endcomment %}
             const chart8 = new Chart(graphic8, {
+                type: 'bar',
+                data: {
+                    labels: ['AAACT', 'AAAG', 'AAC', 'AAC', 'AAC', 'AACC', 'AACC', 'AACC'],
+                    datasets: [{
+                        label: 'Corynebacterium',
+                        data:[10,20,50,20,30,20,55,40],
+                        borderWidth: 1,
+                        hoverOffset: 4,
+                        backgroundColor: '#36A2CD',
+                    },
+                    {
+                        label: 'Rodococcus',
+                        data:[5,5,0,20,10,40,55,40],
+                        borderWidth: 1,
+                        hoverOffset: 4,
+                        backgroundColor: '#FF0000',
+                    }]
+                },
+                options: {
+                    indexAxis: 'y',
+                    plugins: {
+                    title: {
+                        display: true,
+                        text: 'Chart.js Bar Chart - Stacked'
+                    },
+                    },
+                    responsive: true,
+                    interaction: {
+                    intersect: false,
+                    },
+                    scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true
+                    }
+                    }
+                }
+            });
+            
+            {% comment %} const chart8 = new Chart(graphic8, {
                 type: 'bar',
                 data: {
                     labels: ['Corine', 'Rodococos'],
                     datasets: [{
                         label: 'Total',
-                        {% comment %} data: [{{ totalDataStatistic.0.24 }}, {{ totalDataStatistic.0.25 }}], {% endcomment %}
-                        data: [10, 20]
+                        data: [10, 20],
                         borderWidth: 1,
                         hoverOffset: 4
                     }]
-                },
-            });
-
-            {% comment %} const config = {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [
-                    {
-                    label: 'Dataset 1',
-                    data: Utils.numbers(NUMBER_CFG),
-                    backgroundColor: Utils.CHART_COLORS.red,
-                    stack: 'Stack 0',
-                    },
-                    {
-                    label: 'Dataset 2',
-                    data: Utils.numbers(NUMBER_CFG),
-                    backgroundColor: Utils.CHART_COLORS.blue,
-                    stack: 'Stack 0',
-                    },
-                    {
-                    label: 'Dataset 3',
-                    data: Utils.numbers(NUMBER_CFG),
-                    backgroundColor: Utils.CHART_COLORS.green,
-                    stack: 'Stack 1',
-                    },
-                ]
-                };,
-  
-            }; {% endcomment %}
+                }
+            }); {% endcomment %}
 
             function downloadGraphic(chart, nome, format){
                 var uri = chart.toBase64Image('image/'+format, 1);               
