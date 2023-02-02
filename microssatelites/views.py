@@ -155,14 +155,26 @@ def handle_uploaded_file(f, directory):
     return JsonResponse({'status': 'success'})
 
 def dadosGrafico(request):
-    projectdata = ProjectData.get_data(57)
+    projectdata = ProjectData.get_motifs(57)
     lista = []
+    listaCepas = []
+    listaCepasTotais = []
     for i in projectdata:
         lista.append(i)
-    return render(request,'datateste.html', {'lista': lista})
+        listaCepas.append(ProjectData.get_cepas(i[0], 57))
 
-
-
+    for list in listaCepas:
+        for l in list:
+            if l[1] not in listaCepasTotais:
+                listaCepasTotais.append(l[1])
+    print(listaCepasTotais)
+    
+    context = {
+        'lista': lista,
+        'listaCepas': listaCepas,
+        'listaCepasTotais': listaCepasTotais
+    }
+    return render(request,'datateste.html', context)
 
 def extractSummary(file, project):
     perfeitos = 0
@@ -378,16 +390,50 @@ def doc2db(path, project):
 
 def result(request):
     if request.method == 'POST':
+        projectdata = ProjectData.get_motifs(request.POST['projectdata'])
+        lista = []
+        listaCepas = []
+        listaCepasTotais = []
+        for i in projectdata:
+            lista.append(i)
+            listaCepas.append(ProjectData.get_cepas(i[0], 57))
+
+        for list in listaCepas:
+            for l in list:
+                if l[1] not in listaCepasTotais:
+                    listaCepasTotais.append(l[1])
         context = {
             'projectdata' : request.POST['projectdata'],
             'dataStatistics': request.POST['redataStatistics'],
-            'totalDataStatistic': request.POST['totalDataStatistic']
+            'totalDataStatistic': request.POST['totalDataStatistic'],
+            'lista': lista,
+            'listaCepas': listaCepas,
+            'listaCepasTotais': listaCepasTotais
             }
     else:
+        dataStatistics = DataStatistic.objects.filter(project=57)
+        totalDataStatistic = DataStatistic.get_total_data_statistic(57)
+        projectdata = ProjectData.get_data(57)
+        motifs = ProjectData.get_motifs(57)
+        lista = []
+        listaCepas = []
+        listaCepasTotais = []
+        for i in motifs:
+            lista.append(i)
+            listaCepas.append(ProjectData.get_cepas(i[0], 57))
+
+        for list in listaCepas:
+            for l in list:
+                if l[1] not in listaCepasTotais:
+                    listaCepasTotais.append(l[1])
+
         context = {
-            'projectdata' : [1,2,3,4,5,6],
-            'dataStatistics': None,
-            'totalDataStatistic': None
+            'projectdata' : projectdata,
+            'dataStatistics': dataStatistics,
+            'totalDataStatistic': totalDataStatistic,
+            'lista': lista,
+            'listaCepas': listaCepas,
+            'listaCepasTotais': listaCepasTotais
             }
     return render(request,'result.html', context)
     # if request.method == 'GET':

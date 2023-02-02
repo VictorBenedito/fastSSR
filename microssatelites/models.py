@@ -75,6 +75,17 @@ class ProjectData(models.Model):
         rows_cepas = cursor.fetchall()
         return rows_cepas
 
+    def get_motifs(project):
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT motif, COUNT(*) as total FROM microssatelites_projectdata WHERE project_id = {project} GROUP BY motif ORDER BY total DESC LIMIT 10")
+        rows_cepas = cursor.fetchall()
+        return rows_cepas
+    
+    def get_cepas(motif, project):
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT motif, cepa, COUNT(*) FROM microssatelites_projectdata WHERE motif = '{motif}' AND project_id = {project} GROUP BY cepa")
+        rows_cepas = cursor.fetchall()
+        return rows_cepas
 
 class DataStatistic(models.Model):
     cepa = models.CharField('Cepa', max_length=200)

@@ -232,7 +232,7 @@
                         <div class="card-body">
                             <div>
                                 {% comment %} <canvas id="imperfCodxImperfNCodChart"></canvas> {% endcomment %}
-                                <canvas id="perfxImperfChart"></canvas>
+                                <canvas id="imperfCodxImperfNCodChart"></canvas>
                             </div>
                             <hr>
                             (Colocar informações sobre o Gráfico)
@@ -280,7 +280,7 @@
                         <div class="card-header py-3">
                             <div class="row align-items-center">
                                 <div class="col-10">
-                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Codificantes x Não Codificantes</h6>
+                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Ten most frequency SSR</h6>
                                 </div>
                                 <div class="col-2 text-end">
                                     <a class="dropdown" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -288,8 +288,8 @@
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                         <li><h6 class="dropdown-header">Format</h6></li>
-                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart7, 'Codificantes x Não Codificantes', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
-                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart7, 'Codificantes x Não Codificantes', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Ten most frequency SSR', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Ten most frequency SSR', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
                                     </ul>
                                 </div>
                             </div>
@@ -514,7 +514,7 @@
         <!-- Script Gráficos -->
         <script>
             Chart.defaults.backgroundColor = '#9BD0F5';
-            Chart.defaults.borderColor = '#36A2EB';
+            {% comment %} Chart.defaults.borderColor = '#36A2EB'; {% endcomment %}
             {% comment %} Chart.defaults.color = '#FFFFFF'; {% endcomment %}
             const graphic1 = document.getElementById('totalsChart');  
             const graphic2 = document.getElementById('perfxImperfChart');  
@@ -525,7 +525,7 @@
             const graphic7 = document.getElementById('codxNCodChart');
             const graphic8 = document.getElementById('bar');
 
-            {% comment %}
+            
             const chart1 = new Chart(graphic1, {
                 type: 'doughnut',
                 data: {
@@ -550,21 +550,20 @@
                     }*/
                 }
             });
-            {% endcomment %}
+        
             const chart2 = new Chart(graphic2, {
                 type: 'doughnut',
                 data: {
                     labels: ['Perfeitos', 'Imperfeitos'],
                     datasets: [{
                         label: 'Total',
-                        {% comment %} data: [{{ totalDataStatistic.0.6 }}, {{ totalDataStatistic.0.7 }}], {% endcomment %}
-                        data:[10,20],
+                        data: [{{ totalDataStatistic.0.6 }}, {{ totalDataStatistic.0.7 }}],
                         borderWidth: 1,
                         hoverOffset: 4
                     }]
                 },
             });
-            {% comment %}
+
             const chart3 = new Chart(graphic3, {
                 type: 'doughnut',
                 data: {
@@ -629,35 +628,46 @@
                     }]
                 },
             });
-            {% endcomment %}
+    
             const chart8 = new Chart(graphic8, {
                 type: 'bar',
                 data: {
-                    labels: ['AAACT', 'AAAG', 'AAC', 'AAC', 'AAC', 'AACC', 'AACC', 'AACC'],
-                    datasets: [{
-                        label: 'Corynebacterium',
-                        data:[10,20,50,20,30,20,55,40],
-                        borderWidth: 1,
-                        hoverOffset: 4,
-                        backgroundColor: '#36A2CD',
-                    },
-                    {
-                        label: 'Rodococcus',
-                        data:[5,5,0,20,10,40,55,40],
-                        borderWidth: 1,
-                        hoverOffset: 4,
-                        backgroundColor: '#FF0000',
-                    }]
+                    labels: [
+                        {% for data in lista %}
+                        '{{data.0}}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                    {% for cepa in listaCepasTotais %}
+                        {
+                            label: '{{cepa}}',
+                            data: [
+                                {% for listaC in listaCepas %}
+                                    {% for dataCepa in listaC %}
+                                        {% if dataCepa.1 == cepa %}
+                                            {{ dataCepa.2 }},
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            ],
+                            borderWidth: 1,
+                            hoverOffset: 4,
+                        },
+                    {% endfor %}
+                    ]
                 },
                 options: {
                     indexAxis: 'y',
-                    plugins: {
-                    title: {
-                        display: true,
-                        text: 'Chart.js Bar Chart - Stacked'
-                    },
-                    },
                     responsive: true,
+                    plugins: {
+                        legend:{
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Ten most frequency SSR'
+                        },
+                    },
                     interaction: {
                     intersect: false,
                     },
