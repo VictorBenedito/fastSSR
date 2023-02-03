@@ -77,7 +77,7 @@ class ProjectData(models.Model):
 
     def get_motifs(project):
         cursor = connection.cursor()
-        cursor.execute(f"SELECT motif, COUNT(*) as total FROM microssatelites_projectdata WHERE project_id = {project} GROUP BY motif ORDER BY total DESC LIMIT 10")
+        cursor.execute(f"SELECT motif, COUNT(*) as total, iterations FROM microssatelites_projectdata WHERE project_id = {project} GROUP BY motif, iterations ORDER BY total DESC LIMIT 10")
         rows_cepas = cursor.fetchall()
         return rows_cepas
     

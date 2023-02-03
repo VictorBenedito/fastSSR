@@ -30,12 +30,12 @@
                     <hr>
                 </div>
             </div>
-            
+
             <!-- ÁREA DOS GRÁFICOS -->
             <div class="row justify-content-center">
                 <h3><small class="text-muted">Graphics</small></h3>
                 <!-- GRÁFICO 01 - Totais de Padrões-->
-                <div class="col-3">
+                <div class="col-3 md-col-6">
                     <div class="card shadow mb-4">
                         <!-- Card Header - Dropdown -->
                         <div class="card-header py-3">
@@ -51,9 +51,6 @@
                                         <li><h6 class="dropdown-header">Format</h6></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart1, 'Totais de Padrões', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart1, 'Totais de Padrões', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
-                                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -86,9 +83,6 @@
                                         <li><h6 class="dropdown-header">Format</h6></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart2, 'Perfeitos x Imperfeitos', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart2, 'Totais de Padrões', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
-                                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -121,9 +115,6 @@
                                         <li><h6 class="dropdown-header">Format</h6></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart3, 'Totais de Perfeitos', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart3, 'Totais de Perfeitos', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
-                                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -156,9 +147,6 @@
                                         <li><h6 class="dropdown-header">Format</h6></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart4, 'Totais de Imperfeitos', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
                                         <li><button class="dropdown-item" onClick="downloadGraphic(chart4, 'Totais de Imperfeitos', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
-                                        <li><a class="dropdown-item" href="#">Another action</a></li>
-                                        <li><hr class="dropdown-divider"></li>
-                                        <li><a class="dropdown-item" href="#">Something else here</a></li>
                                     </ul>
                                 </div>
                             </div>
@@ -489,11 +477,10 @@
                 </div>
             </div>
         </div>
-        
         <!-- Bootstrap Bundle with Popper -->
         {% comment %} <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.0.1/chart.min.js"></script> {% endcomment %}
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-        
+        <script src="https://cdn.anychart.com/releases/8.11.0/js/anychart-exports.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFhosVNubq5LC7Qb9DXgDA9i+tQ8Zj3iwWAwPtgFTxbJ8NT4GN1R8p" crossorigin="anonymous"></script>
         
         <!-- JQuery -->
@@ -507,7 +494,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.html5.min.js"></script>
         <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.print.min.js"></script>
-
+        <script src="{% static 'js/canvas2svg.js'%}"></script>
         <!-- Chart.js -->
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> 
         
@@ -524,7 +511,6 @@
             const graphic6 = document.getElementById('imperfCodxImperfNCodChart');  
             const graphic7 = document.getElementById('codxNCodChart');
             const graphic8 = document.getElementById('bar');
-
             
             const chart1 = new Chart(graphic1, {
                 type: 'doughnut',
@@ -543,6 +529,7 @@
                     }]
                 },
                 options: {
+                    responsive: true,
                     /*scales: {
                         y: {
                         beginAtZero: true,                        
@@ -634,7 +621,7 @@
                 data: {
                     labels: [
                         {% for data in lista %}
-                        '{{data.0}}',
+                        '{{data.0}}-{{data.2}}',
                         {% endfor %}
                     ],
                     datasets: [
@@ -681,19 +668,6 @@
                     }
                 }
             });
-            
-            {% comment %} const chart8 = new Chart(graphic8, {
-                type: 'bar',
-                data: {
-                    labels: ['Corine', 'Rodococos'],
-                    datasets: [{
-                        label: 'Total',
-                        data: [10, 20],
-                        borderWidth: 1,
-                        hoverOffset: 4
-                    }]
-                }
-            }); {% endcomment %}
 
             function downloadGraphic(chart, nome, format){
                 var uri = chart.toBase64Image('image/'+format, 1);               
@@ -704,42 +678,6 @@
             }
         </script>
 
-        <!-- Script Tabelas -->
-        {% comment %} <script>
-            function tableToCSV() {
-
-                // Variable to store the final csv data
-                var csv_data = [];
-            
-                // Get each row data
-                var rows = document.getElementsById('dataTable');
-                alert(rows);
-                for (var i = 0; i < rows.length; i++) {
-            
-                    // Get each column data
-                    var cols = rows[i].querySelectorAll('td,th');
-            
-                    // Stores each csv row data
-                    var csvrow = [];
-                    for (var j = 0; j < cols.length; j++) {
-            
-                        // Get the text data of each cell of
-                        // a row and push it to csvrow
-                        csvrow.push(cols[j].innerHTML);
-                    }
-            
-                    // Combine each column value with comma
-                    csv_data.push(csvrow.join(","));
-                }
-                // combine each row data with new line character
-                csv_data = csv_data.join('\n');
-                alert(csv_data);
-                /* We will use this function later to download
-                the data in a csv file downloadCSVFile(csv_data);
-                */
-            }
-            
-        </script> {% endcomment %}
         <script>
             $(document).ready(function () {
                 $('#dataTable').DataTable({
@@ -755,37 +693,6 @@
                     ]
                 });
             });
-            /*
-            function tableToCSV() {
-                // Variable to store the final csv data
-                var csv_data = [];
-            
-                // Get each row data
-                var rows = document.getElementsByTagName('tr');
-                
-                for (var i = 0; i < rows.length; i++) {
-            
-                    // Get each column data
-                    var cols = rows[i].querySelectorAll('td,th');
-            
-                    // Stores each csv row data
-                    var csvrow = [];
-                    for (var j = 0; j < cols.length; j++) {
-            
-                        // Get the text data of each cell of
-                        // a row and push it to csvrow
-                        csvrow.push(cols[j].innerHTML);
-                    }
-            
-                    // Combine each column value with comma
-                    csv_data.push(csvrow.join(","));
-                }
-                // combine each row data with new line character
-                csv_data = csv_data.join('\n');
-                
-                alert(csv_data);
-            }*/
-            
         </script>        
     </body>
 </html>
