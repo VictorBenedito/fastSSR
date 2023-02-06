@@ -98,11 +98,10 @@ def index(request):
             files = os.listdir(f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT')
             if '.DS_Store' in files:
                 files.remove('.DS_Store')
-
+            cont = 1
             for i in files:
                 path_file_summary = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_summary.txt'
                 path_file_aln = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_aln.txt'
-                cont = 1
                 # Extrair Dados do Summary
                 print('Extraindo dados do Arquivo Summary')
                 extractSummary(path_file_summary, project)
@@ -129,9 +128,20 @@ def index(request):
             print('================================================================')
             dataStatistics = DataStatistic.objects.filter(project=project)
             projectdata = ProjectData.get_data(project.pk)
-
             totalDataStatistic = DataStatistic.get_total_data_statistic(project.pk)
-            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic})
+            motifs = ProjectData.get_motifs(project.pk)
+            lista = []
+            listaCepas = []
+            listaCepasTotais = []
+            for i in motifs:
+                lista.append(i)
+                listaCepas.append(ProjectData.get_cepas(i[0], project.pk))
+
+            for list in listaCepas:
+                for l in list:
+                    if l[1] not in listaCepasTotais:
+                        listaCepasTotais.append(l[1])
+            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'listaCepas':listaCepas, 'listaCepasTotais':listaCepasTotais})
     else:
         form = UploadFileForm()
     return render(request, 'index.html', {'form': form})
@@ -207,6 +217,7 @@ def extractSummary(file, project):
     # Percorre as linhas do arquivo
     for linha in linhas:
         # Desconsidera as linhas 1 e 2
+        
         if not((linha == linhas[0]) or (linha == linhas[1])):
             # Separa as colunas baseado no espaço em branco entre elas
             linhaIndex = linha.split()
@@ -327,6 +338,7 @@ def extractSummary(file, project):
                imperfeitoHexa = impHexa,
                project = project
     )
+    print(f'Gravando Estatística no Banco {file}')
     dataStatistic.save()
     return dataStatistic
 
@@ -376,7 +388,9 @@ def doc2db(path, project):
                     ]
             repeatMotifList.append(motif)
             projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, project = project)
+            print(f'Gravando Linha no Banco {cont} de {len(linhas)}')
             projectdata.save()
+            
             # cursor.execute(f"INSERT INTO DATA (MOTIF, LFLANK, RFLANK, ITERATIONS, TRACKLENGTH, CONSENSUS, CONSULTA, CEPA) VALUES ('{repeatMotif}', ' {lflanking} ', ' {rflanking} ', {iterations}, {tractLength}, '{ consensus}', {1}, '{cepa}');")
         # objetos.append(File(cepa, repeatMotifList))
         cont += 1
@@ -390,37 +404,25 @@ def doc2db(path, project):
 
 def result(request):
     if request.method == 'POST':
-        projectdata = ProjectData.get_motifs(request.POST['projectdata'])
-        lista = []
-        listaCepas = []
-        listaCepasTotais = []
-        for i in projectdata:
-            lista.append(i)
-            listaCepas.append(ProjectData.get_cepas(i[0], 57))
-
-        for list in listaCepas:
-            for l in list:
-                if l[1] not in listaCepasTotais:
-                    listaCepasTotais.append(l[1])
         context = {
             'projectdata' : request.POST['projectdata'],
-            'dataStatistics': request.POST['redataStatistics'],
+            'dataStatistics': request.POST['dataStatistics'],
             'totalDataStatistic': request.POST['totalDataStatistic'],
-            'lista': lista,
-            'listaCepas': listaCepas,
-            'listaCepasTotais': listaCepasTotais
+            'lista': request.POST['lista'],
+            'listaCepas': request.POST['listaCepas'],
+            'listaCepasTotais': request.POST['listaCepasTotais']
             }
     else:
-        dataStatistics = DataStatistic.objects.filter(project=57)
-        totalDataStatistic = DataStatistic.get_total_data_statistic(57)
-        projectdata = ProjectData.get_data(57)
-        motifs = ProjectData.get_motifs(57)
+        dataStatistics = DataStatistic.objects.filter(project=73)
+        totalDataStatistic = DataStatistic.get_total_data_statistic(73)
+        projectdata = ProjectData.get_data(73)
+        motifs = ProjectData.get_motifs(73)
         lista = []
         listaCepas = []
         listaCepasTotais = []
         for i in motifs:
             lista.append(i)
-            listaCepas.append(ProjectData.get_cepas(i[0], 57))
+            listaCepas.append(ProjectData.get_cepas(i[0], 73))
 
         for list in listaCepas:
             for l in list:
