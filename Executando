@@ -1,0 +1,9 @@
+Iniciando Conversão...
+Arquivos a serem convertidos: ['Corynebacterium_ulcerans_NCTC7910.gbff', 'Escherichia_coli_str._K12_substr._MG1655.gbff']
+Conversão concluida! Arquivo gerado: Corynebacterium_ulcerans_NCTC7910.ptt 
+Tempo: 2.1829049587249756
+
+Conversão concluida! Arquivo gerado: Escherichia_coli_str._K12_substr._MG1655.ptt 
+Tempo: 3.445690155029297
+
+Tempo Total: 5.637722492218018

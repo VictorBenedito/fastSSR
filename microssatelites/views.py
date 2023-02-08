@@ -3,38 +3,30 @@ from .forms import NameForm, LoginForm, UploadFileForm, DownloadForm
 from .tables import PersonTable
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
-from django.contrib.auth import authenticate, login
 from django.views.decorators.csrf import csrf_exempt
+from .models import User, Project, ProjectData, DataStatistic, Person
 import pandas as pd
 import os
 import time
-from django.db.models import Count
-from .models import User, Project, ProjectData, DataStatistic, Person
 # Celery Task
 from .tasks import ProcessDownload
 
-# Create your views here.
+
+stepProcessament = 1
+global statusProcessament
+global step01
+global step02
+global step03
+global step04
+global percent03
+
+
+
+
+is_complete = False
 
 def upload(request):
     return render(request, 'progressbar.html')
-
-# def handle_upload(request):
-#     if request.method == 'POST':
-#         file = request.FILES['file']
-#         # process the file, e.g. save it to the server
-#         dirproject = f'USER_PROJECT'
-#         os.system(f'mkdir {dirproject}')
-#         handle_uploaded_file(file, dirproject)
-
-#         return JsonResponse({'status': 'success'})
-
-def handle_upload(request):
-    if request.method == 'POST':
-        files = request.FILES.getlist('file')
-        # for file in files:
-            # process the file, e.g. save it to the server
-            # ...
-        return JsonResponse({'status': 'success'})
 
 def upload_file(request):
     if request.method == 'POST':
@@ -50,7 +42,10 @@ def index(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            print('Entrou no FORM')
+            statusProcessament = 'Iniciando Processamento...'
+            step01 = False
+            step02 = False
+            step03 = False
             # CRIAR O USER NO DB COM OS DADOS DO FORMULÁRIO
             user = User.objects.create(name=request.POST['name'], email=request.POST['email'])
             user.save()
@@ -77,29 +72,38 @@ def index(request):
             for f in request.FILES.getlist('fileGBK'):
                 handle_uploaded_file(f, f'{dirproject}/{subdirectories[3]}')
 
+            
             print('================================================================')
             print('=                 Convertendo Arquivos GBKtoPTT                =')
             print('================================================================')
+            statusProcessament = "Convertendo Arquivos GBKtoPTT..."
             os.system(f'python3 microssatelites/Scripts/GBKtoPTT.py {dirproject}')
+            step01 = True
+            
 
             print('================================================================')
             print('=                       Executando o IMEx                      =')
             print('================================================================')
+            statusProcessament = "Convertendo Extraindo Microssatelites..."
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
+            step02 = True
+
             # os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             # os.system(f'cp -R IMEx_OUTPUT {dirproject}/{subdirectories[0]}/OutPutProcessed')
 
             print('================================================================')
             print('=                Processando Arquivos do IMEx                  =')
             print('================================================================')
-
+            statusProcessament = "Extraindo Dados..."
+            
             # Abrir Pasta do IMEx_OUTPUT
             files = os.listdir(f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT')
             if '.DS_Store' in files:
                 files.remove('.DS_Store')
             cont = 1
             for i in files:
+                percent03 = cont/len(files) * 100
                 path_file_summary = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_summary.txt'
                 path_file_aln = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_aln.txt'
                 # Extrair Dados do Summary
@@ -117,14 +121,10 @@ def index(request):
                 # if os.path.exists(f'{dirproject}/UserOutputs/OutPutProcessed'):
                 #     path_file_out = f'{dirproject}/UserOutputs/OutPutProcessed/'
                 #     os.system('python3 microssatelites/Scripts/read.py ' + path_file + ' > '+ path_file_out + i +'.txt')
-
+            step03 = True
+            statusProcessament = "Finalizando..."
             print('================================================================')
-            print('=                      Criando Tabela 01                       =')
-            print('================================================================')
-            # os.system(f'python3 microssatelites/Scripts/createTable.py --input {dirproject}/UserOutputs/OutPutProcessed/ --output_file {dirproject}/UserOutputs/Microsat')
-
-            print('================================================================')
-            print('=                      Dados para o DB                         =')
+            print('=                  Dados para os Graficos                      =')
             print('================================================================')
             dataStatistics = DataStatistic.objects.filter(project=project)
             projectdata = ProjectData.get_data(project.pk)
@@ -146,15 +146,6 @@ def index(request):
         form = UploadFileForm()
     return render(request, 'index.html', {'form': form})
 
-def person_list(request):
-    # table = PersonTable(ProjectData.objects.all())
-    table = PersonTable(ProjectData.objects.values('motif','cepa','iterations', 'consensus', 'lflanking', 'rflanking').annotate(dcount=Count('motif')).order_by())
-    table.paginate(page=request.GET.get("page", 1), per_page=25)
-
-    return render(request, "person_list.html", {
-        "table": table
-    })
-
 # FUNÇÕES ACESSÓRIAS
 @csrf_exempt
 def handle_uploaded_file(f, directory):
@@ -163,6 +154,21 @@ def handle_uploaded_file(f, directory):
         destination.write(chunk)
     destination.close()
     return JsonResponse({'status': 'success'})
+
+def get_processing_status(request):
+  # Insira aqui o código para obter o status do processamento atual
+  percent_complete = 50
+  # Retornar o status do processamento como resposta JSON
+  data = {
+    'stepProcessament': stepProcessament,
+    'statusProcessament': statusProcessament,
+    'percent_complete': percent03,
+    'step01': step01,
+    'step02': step02,
+    'step03': step03,
+    'is_complete': is_complete
+  }
+  return JsonResponse(data)
 
 def dadosGrafico(request):
     projectdata = ProjectData.get_motifs(57)
@@ -338,7 +344,6 @@ def extractSummary(file, project):
                imperfeitoHexa = impHexa,
                project = project
     )
-    print(f'Gravando Estatística no Banco {file}')
     dataStatistic.save()
     return dataStatistic
 
@@ -438,33 +443,3 @@ def result(request):
             'listaCepasTotais': listaCepasTotais
             }
     return render(request,'result.html', context)
-    # if request.method == 'GET':
-    #     print('Entrou no POST')
-    #     # user = User.objects.filter(id=request.POST['project'])[0]
-    #     # project = Project.objects.filter(user=user)[0]
-    #     user = request.POST['user']
-    #     project = request.POST['project']
-    #     dataStatistics = DataStatistic.objects.filter(project=project)
-    #     totalDataStatistic = DataStatistic.get_total_data_statistic(project.pk)
-    #     print(project)
-    #     projectdata = ProjectData.get_data(project.pk)
-    #     context = {
-    #         'projectdata' : projectdata,
-    #         'dataStatistics': dataStatistics,
-    #         'totalDataStatistic': totalDataStatistic
-    #     }
-    #     return render(request,'result.html', context)
-    # else:
-    #     user = User.objects.filter(id=8)[0]
-    #     project = Project.objects.filter(user=user)[0]
-    #     dataStatistics = DataStatistic.objects.filter(project=project)
-    #     totalDataStatistic = DataStatistic.get_total_data_statistic(project.pk)
-    #     print(project)
-    #     projectdata = ProjectData.get_data(project.pk)
-    #     context = {
-    #         'projectdata' : projectdata,
-    #         'dataStatistics': dataStatistics,
-    #         'totalDataStatistic': totalDataStatistic
-    #     }
-
-    # return render(request,'result.html', context)

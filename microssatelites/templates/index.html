@@ -25,6 +25,7 @@
               </div>
           </div>
       </div>
+      
       <div class="row">
           <!-- Card Form -->
           <div class="col-xl-12 col-md-12 mb-12">
@@ -73,9 +74,9 @@
                                 </div>
                             </div>
                         </div>
-                      </div><br>
-                      <hr class="sidebar-divider my-0"><br>
-                      <div class="row align-items-center">
+                        </div><br>
+                        <hr class="sidebar-divider my-0"><br>
+                        <div class="row align-items-center">
                           <!-- Spinner -->
                           <br><br><br>
                           <div class="form-group" id="spinner" style="display: none">
@@ -87,15 +88,103 @@
                           <div class="form-group" id="submit">
                             <input class="col-xl-2 col-md-2 mb-1 btn btn-primary btn-user btn-block" type="submit" value="Upload"/>
                           </div>
-                          
-                          <!-- <div class="progress" id="progress_div">
-                            <div class="progress-bar" id="progress_bar" role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div> -->
+                        </div>
                     </form>
                   </div>
                   <span id="labelbar"></span>
                   <div class="progress mr-2" id="progress_div" style="display: none">
                     <div class="progress-bar bg-info" id="progress_bar"  role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                  </div>
+                  <style>
+                    .table-item-center th, td{
+                      text-align: center;
+                    }
+                    .code {
+                      text-align: left;
+                    }
+                  </style>
+                  <table class="table table-item-center">
+                    <thead>
+                      <tr>
+                        <th class="align-items-center">
+                          Etapa 01
+                        </th>
+                        <th>
+                          Etapa 02
+                        </th>
+                        <th>
+                          Etapa 03
+                        </th>
+                        <th>
+                          Etapa 04
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <!--SPINNERS-->
+                        <td>
+                          <div class="spinner-grow text-primary" id="spinner01" style="display: none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="spinner-grow text-secondary" id="spinner02" style="display: none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="spinner-grow text-success" id="spinner03" style="display: none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </td>
+                        <td>
+                          <div class="spinner-grow text-info" id="spinner04" style="display: none" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                          </div>
+                        </td>
+                      </tr>
+                      <!--BARRAS-->
+                      <tr>
+                        <td>
+                          <div class="progress" id="progress_div_01">
+                            <div class="progress-bar" id="progress_bar_01" role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                         <td>
+                          <div class="progress" id="progress_div_02">
+                            <div class="progress-bar" id="progress_bar_02" role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                         <td>
+                          <div class="progress" id="progress_div_03">
+                            <div class="progress-bar" id="progress_bar_03" role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                         <td>
+                          <div class="progress" id="progress_div_04">
+                            <div class="progress-bar" id="progress_bar_04" role="progressbar" aria-label="Example with label" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td colspan="4" class="code table-active">
+                          <samp class="text-black-50 code">Output processament</samp>
+                          <hr>
+                          <div class="code">
+                            <samp id="labelStatus">Conversão dos Arquivos .gbk</samp>
+                          </div>
+                        </td>
+                      </tr>
+                      <!--STATUS-->
+                      
+                    </tbody>
+                  </table>
+                  <div>
+                    <!-- BOTÃO DE TESTE -->
+                    <div>
+                      <button type="button" class="btn btn-primary" id="upload-btn">Teste Barra</button>
+                    </div> 
                   </div>
               </div>
               <!-- <button id="upload-btn">Upload</button> -->
@@ -192,44 +281,24 @@
         }
       },false);
       xhr.send(formData);
-    } 
+    }
   }
 
   document.getElementById('upload-btn').addEventListener('click', function(){
-    var fileInput = document.getElementById('id_fileFasta');
-    var files = fileInput.files;
-    var formData = new FormData();
-    
-    for (i=0 ; i < files.length ; i++){
-      var file = files[i];
-      formData.append('file'+i, files.item(i));
-      console.log(formData);
-      console.log('file'+i);
-      console.log(files[i].name)
-
-      var xhr = new XMLHttpRequest();
-      xhr.open('POST', '');
-      xhr.upload.addEventListener("progress", function(ev){
-        if (ev.lengthComputable){
-          // console.log("Uploaded: "+ ev.loaded)
-          // console.log("Total: "+ ev.total)
-          var percentage = (ev.loaded/ev.total * 100|0);
-          document.getElementById('progress_bar').style["width"]=""+percentage+"%";
-          document.getElementById('progress_bar').innerHTML=""+percentage+"%";
-          document.getElementById('labelbar').innerHTML="Uploaded: "+parseInt(ev.loaded/1000000)+"/"+parseInt(ev.total/1000000)+" MB";
-          console.log('Uploaded: ' + (percentage) +'%');
-        }
-      },false);
-      xhr.send(formData);
-    } 
-
+    //getProcessingStatus();
+    //document.getElementById('spinner01').style.display = 'block';
+    $("#spinner01").show();
   });
+
 </script>
 <script type="text/javascript">
   function spinner(){
     $("#spinner").show();
     $("#submit").hide();
+    //Atualiza as informações do Upload
     upload();
+    // Iniciar a obtenção do status do processamento
+    getProcessingStatus();
   }
 
   function exibir_ocultar(){
@@ -258,14 +327,49 @@
      $range2.addEventListener('input', function() {
          $value2.textContent = this.value;
      });
-
-
-
-     // selector = document.
-     // element = $(selector);
-
-     // alert(selector);
   }
+
+  // Função para atualizar a barra de progresso do processamento
+  function updateProgress(stepProcessament, statusProcessament, percentage, step01, step02, step03) {
+    {% comment %}var progress = document.getElementById("progress");
+    progress.style.width = percent + "%"; {% endcomment %}
+
+    var progress_bar_03 = document.getElementById('progress_bar_03');
+    var labelStatus = document.getElementById('labelStatus');
+    var labelStep = document.getElementById('labelStep');
+
+    if(step01 == false){
+       $("#spinner01").show();
+    }else if(step01 == true){
+        $("#spinner01").hide();
+        if(step02 == false){
+          $("#spinner02").show();
+        }else if(step02 == true){
+            $("#spinner02").hide();
+            if(step03 == false){
+              $("#spinner03").show();
+            }
+        }
+    }
+    labelStatus.innerHTML=statusProcessament;
+    progress_bar_03.style["width"]=""+percentage+"%";
+    progress_bar_03.innerHTML=""+percentage+"%";
+  }
+
+  // Função para obter o status do processamento do back-end via ajax
+  function getProcessingStatus() {
+    $.ajax({
+      type: "GET",
+      url: "/get_processing_status/",
+      success: function(data) {
+        updateProgress(data.stepProcessament, data.statusProcessament, data.percent_complete, data.step01, data.step02, data.step03);
+        if (data.is_complete == false) {
+          setTimeout(getProcessingStatus, 1000);
+        }
+      }
+    });
+}
+
 </script>
 <!-- <script>
   var upload_form = document.getElementById('upload-form');
