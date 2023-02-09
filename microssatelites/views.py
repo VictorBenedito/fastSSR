@@ -11,15 +11,11 @@ import time
 # Celery Task
 from .tasks import ProcessDownload
 
-
-stepProcessament = 1
-global statusProcessament
-global step01
-global step02
-global step03
-global step04
-global percent03
-
+statusProcessament = ""
+step01 = False
+step02 = False
+step03 = False
+percent03 = 0
 
 
 
@@ -42,10 +38,13 @@ def index(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            statusProcessament = 'Iniciando Processamento...'
-            step01 = False
-            step02 = False
-            step03 = False
+            global statusProcessament
+            global step01
+            global step02
+            global step03
+            global percent03
+
+
             # CRIAR O USER NO DB COM OS DADOS DO FORMULÁRIO
             user = User.objects.create(name=request.POST['name'], email=request.POST['email'])
             user.save()
@@ -84,7 +83,7 @@ def index(request):
             print('================================================================')
             print('=                       Executando o IMEx                      =')
             print('================================================================')
-            statusProcessament = "Convertendo Extraindo Microssatelites..."
+            statusProcessament = "Extraindo Microssatelites..."
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
             step02 = True
@@ -103,7 +102,6 @@ def index(request):
                 files.remove('.DS_Store')
             cont = 1
             for i in files:
-                percent03 = cont/len(files) * 100
                 path_file_summary = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_summary.txt'
                 path_file_aln = f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT/'+ i +'/TEXT_OUTPUT/'+ i + '_aln.txt'
                 # Extrair Dados do Summary
@@ -114,6 +112,8 @@ def index(request):
                     # path_file_out = 'UserOutputs/OutPutProcessed/'
                     # os.system('python3 microssatelites/Scripts/newRead.py ' + path_file_aln + ' ' + str(project.pk))
                     doc2db(path_file_aln, project)
+                    percent03 = cont/len(files) * 100
+                    print (percent03)
                 else:
                     print('Arquivo de Entrada não encontrado!')
                 cont+=1
@@ -157,10 +157,9 @@ def handle_uploaded_file(f, directory):
 
 def get_processing_status(request):
   # Insira aqui o código para obter o status do processamento atual
-  percent_complete = 50
+
   # Retornar o status do processamento como resposta JSON
   data = {
-    'stepProcessament': stepProcessament,
     'statusProcessament': statusProcessament,
     'percent_complete': percent03,
     'step01': step01,
@@ -393,7 +392,8 @@ def doc2db(path, project):
                     ]
             repeatMotifList.append(motif)
             projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, project = project)
-            print(f'Gravando Linha no Banco {cont} de {len(linhas)}')
+            global statusProcessament
+            statusProcessament = f'Gravando Linha no Banco {cont} de {len(linhas)}'
             projectdata.save()
             
             # cursor.execute(f"INSERT INTO DATA (MOTIF, LFLANK, RFLANK, ITERATIONS, TRACKLENGTH, CONSENSUS, CONSULTA, CEPA) VALUES ('{repeatMotif}', ' {lflanking} ', ' {rflanking} ', {iterations}, {tractLength}, '{ consensus}', {1}, '{cepa}');")

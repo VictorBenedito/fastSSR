@@ -172,7 +172,7 @@
                           <samp class="text-black-50 code">Output processament</samp>
                           <hr>
                           <div class="code">
-                            <samp id="labelStatus">Conversão dos Arquivos .gbk</samp>
+                            <samp id="labelStatus"></samp>
                           </div>
                         </td>
                       </tr>
@@ -285,9 +285,8 @@
   }
 
   document.getElementById('upload-btn').addEventListener('click', function(){
-    //getProcessingStatus();
+    getProcessingStatus();
     //document.getElementById('spinner01').style.display = 'block';
-    $("#spinner01").show();
   });
 
 </script>
@@ -330,7 +329,7 @@
   }
 
   // Função para atualizar a barra de progresso do processamento
-  function updateProgress(stepProcessament, statusProcessament, percentage, step01, step02, step03) {
+  function updateProgress(statusProcessament, percentage, step01, step02, step03) {
     {% comment %}var progress = document.getElementById("progress");
     progress.style.width = percent + "%"; {% endcomment %}
 
@@ -362,7 +361,8 @@
       type: "GET",
       url: "/get_processing_status/",
       success: function(data) {
-        updateProgress(data.stepProcessament, data.statusProcessament, data.percent_complete, data.step01, data.step02, data.step03);
+        console.log(data);
+        updateProgress(data.statusProcessament, data.percent_complete, data.step01, data.step02, data.step03);
         if (data.is_complete == false) {
           setTimeout(getProcessingStatus, 1000);
         }
