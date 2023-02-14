@@ -103,7 +103,7 @@ def index(request):
                     print(f'Lendo arquivo {cont} de {len(files)}')
                     # path_file_out = 'UserOutputs/OutPutProcessed/'
                     # os.system('python3 microssatelites/Scripts/newRead.py ' + path_file_aln + ' ' + str(project.pk))
-                    doc2db(path_file_aln, project)
+                    doc2db(request, path_file_aln, project)
                     request.session['percent03'] = round(cont/len(files) * 100, 1)
                 else:
                     print('Arquivo de Entrada não encontrado!')
