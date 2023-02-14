@@ -4,10 +4,12 @@ from .tables import PersonTable
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from .models import User, Project, ProjectData, DataStatistic, Person
+from .models import User, Project, ProjectData, DataStatistic
 import pandas as pd
-import os
+import os, re
+import sys
 import time
+
 # Celery Task
 from .tasks import ProcessDownload
 
@@ -16,13 +18,9 @@ step01 = False
 step02 = False
 step03 = False
 percent03 = 0
-
-
-
+lastProject = None
+dic = {}
 is_complete = False
-
-def upload(request):
-    return render(request, 'progressbar.html')
 
 def upload_file(request):
     if request.method == 'POST':
@@ -35,16 +33,25 @@ def upload_file(request):
     return render(request, 'index.html', {'form': form})
 
 def index(request):
+    global dic
+    
+    global statusProcessament
+    global step01
+    global step02
+    global step03
+    global percent03
+    global lastProject
+
+    statusProcessament = ''
+    step01 = False
+    step02 = False
+    step03 = False
+    percent03 = 0
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            global statusProcessament
-            global step01
-            global step02
-            global step03
-            global percent03
-
-
+            request.session['sname'] = request.POST['name']  
+            request.session['semail'] = request.POST['email']
             # CRIAR O USER NO DB COM OS DADOS DO FORMULÁRIO
             user = User.objects.create(name=request.POST['name'], email=request.POST['email'])
             user.save()
@@ -52,7 +59,15 @@ def index(request):
             # CRIAR O PROJETO NO DB
             project = Project.objects.create(user=user)
             project.save()
-
+            request.sessiom['project'] = project.pk
+            # Dicionário que contém as informações de status
+            dic[f'{project.pk}'] = {'statusProcessament': 'Iniciando...',
+                                    'step01': False,
+                                    'step02': False,
+                                    'step03': False,
+                                    'percent03': 0
+                                    }
+            lastProject = project.pk
             # CRIAR PASTA DO PROJETO USER[PK]_PROJECT[PK]
             dirproject = f'USER{user.pk}_PROJECT{project.pk}'
             os.system(f'mkdir {dirproject}')
@@ -64,6 +79,8 @@ def index(request):
 
             # TRANSFERIR OS ARQUIVOS PARAS AS SUBPASTAS
             # |---FASTAs
+            dic[f'{project.pk}']['statusProcessament'] = "Upload dos Arquivos..."
+            statusProcessament = "Upload dos Arquivos..."
             for f in request.FILES.getlist('fileFasta'):
                 handle_uploaded_file(f, f'{dirproject}/{subdirectories[2]}')
 
@@ -75,18 +92,19 @@ def index(request):
             print('================================================================')
             print('=                 Convertendo Arquivos GBKtoPTT                =')
             print('================================================================')
+            dic[f'{project.pk}']['statusProcessament'] = "Convertendo Arquivos GBKtoPTT..."
             statusProcessament = "Convertendo Arquivos GBKtoPTT..."
             os.system(f'python3 microssatelites/Scripts/GBKtoPTT.py {dirproject}')
-            step01 = True
-            
+            dic[f'{project.pk}']['step01'] = True
 
             print('================================================================')
             print('=                       Executando o IMEx                      =')
             print('================================================================')
+            dic[f'{project.pk}']['statusProcessament'] = "Extraindo Microssatelites..."
             statusProcessament = "Extraindo Microssatelites..."
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
-            step02 = True
+            dic[f'{project.pk}']['step02'] = True
 
             # os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             # os.system(f'cp -R IMEx_OUTPUT {dirproject}/{subdirectories[0]}/OutPutProcessed')
@@ -94,7 +112,8 @@ def index(request):
             print('================================================================')
             print('=                Processando Arquivos do IMEx                  =')
             print('================================================================')
-            statusProcessament = "Extraindo Dados..."
+            dic[f'{project.pk}']['statusProcessament'] = "Extraindo Dados dos Microssatelites..."
+            statusProcessament = "Extraindo Dados dos Microssatelites..."
             
             # Abrir Pasta do IMEx_OUTPUT
             files = os.listdir(f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT')
@@ -112,8 +131,8 @@ def index(request):
                     # path_file_out = 'UserOutputs/OutPutProcessed/'
                     # os.system('python3 microssatelites/Scripts/newRead.py ' + path_file_aln + ' ' + str(project.pk))
                     doc2db(path_file_aln, project)
-                    percent03 = cont/len(files) * 100
-                    print (percent03)
+                    dic[f'{project.pk}']['percent03'] = round(cont/len(files) * 100, 1)
+                    percent03 = round(cont/len(files) * 100, 1)
                 else:
                     print('Arquivo de Entrada não encontrado!')
                 cont+=1
@@ -121,6 +140,8 @@ def index(request):
                 # if os.path.exists(f'{dirproject}/UserOutputs/OutPutProcessed'):
                 #     path_file_out = f'{dirproject}/UserOutputs/OutPutProcessed/'
                 #     os.system('python3 microssatelites/Scripts/read.py ' + path_file + ' > '+ path_file_out + i +'.txt')
+            dic[f'{project.pk}']['statusProcessament'] = "Finalizando..."
+            dic[f'{project.pk}']['step03'] = True
             step03 = True
             statusProcessament = "Finalizando..."
             print('================================================================')
@@ -135,13 +156,25 @@ def index(request):
             listaCepasTotais = []
             for i in motifs:
                 lista.append(i)
-                listaCepas.append(ProjectData.get_cepas(i[0], project.pk))
+                listaCepas.append(ProjectData.get_cepas(i[0], project.pk, i[2]))
 
             for list in listaCepas:
                 for l in list:
                     if l[1] not in listaCepasTotais:
                         listaCepasTotais.append(l[1])
-            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'listaCepas':listaCepas, 'listaCepasTotais':listaCepasTotais})
+            motifs2 = ProjectData.get_motifs2(project.pk)
+            lista2 = []
+            listaCepas2 = []
+            listaCepasTotais2 = []
+            for j in motifs2:
+                lista2.append(j)
+                listaCepas2.append(ProjectData.get_cepas2(j[0], project.pk))
+            
+            for list2 in listaCepas2:
+                for l2 in list2:
+                    if l2[1] not in listaCepasTotais2:
+                        listaCepasTotais2.append(l2[1])
+            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'lista2':lista2, 'listaCepas':listaCepas, 'listaCepas2': listaCepas2, 'listaCepasTotais':listaCepasTotais, 'listaCepasTotais2':listaCepasTotais2})
     else:
         form = UploadFileForm()
     return render(request, 'index.html', {'form': form})
@@ -157,17 +190,68 @@ def handle_uploaded_file(f, directory):
 
 def get_processing_status(request):
   # Insira aqui o código para obter o status do processamento atual
+    nome = request.session.get('sname', '')
+    request.session['sname'] = 'Fulano'
+    request.session['semail'] = 'fulano@gmail.com'
+    
+    if nome == '':
+        data = {
+            'nome': 'Sessão Vazia',
+            'email': 'Sessão Vazia'
+        }
+    else:    
+        data = {
+            'nome': request.session['sname'],
+            'email': request.session['semail']
+        }
+    # if request.method == 'GET':
+    #     get = request.GET
 
-  # Retornar o status do processamento como resposta JSON
-  data = {
-    'statusProcessament': statusProcessament,
-    'percent_complete': percent03,
-    'step01': step01,
-    'step02': step02,
-    'step03': step03,
-    'is_complete': is_complete
-  }
-  return JsonResponse(data)
+        # try:
+        #     if 'project' in get:
+        #         # Retornar o status do processamento como resposta JSON
+        #         data = {
+        #             'haveProject': True,
+        #             'project': dic[get['project']],
+        #             'statusProcessament': dic[get['project']]['statusProcessament'],
+        #             'step01': dic[get['project']]['step01'],
+        #             'step02': dic[get['project']]['step02'],
+        #             'step03': dic[get['project']]['step03'],
+        #             'precent_complete': dic[get['project']]['percent03'],
+        #         }
+        #     else:  
+        #         if lastProject != None:
+        #             data = {
+        #                 'haveProject': False,
+        #                 'statusProcessament': 'Iniciando...',
+        #                 'step01': False,
+        #                 'step02': False,
+        #                 'step03': False,
+        #                 'precent_complete': 0,
+        #                 'project': lastProject
+        #             }
+        #         else:
+        #             data = {
+        #                 'haveProject': False,
+        #                 'statusProcessament': 'Buscando Projeto...',
+        #                 'step01': False,
+        #                 'step02': False,
+        #                 'step03': False,
+        #                 'precent_complete': 0,
+        #                 'project': False
+        #             }
+        # except KeyError as err:
+        #     data = {
+        #             'haveProject': False,
+        #             'statusProcessament': 'ERRO! Projecto não existe!',
+        #             'step01': False,
+        #             'step02': False,
+        #             'step03': False,
+        #             'precent_complete': 0
+        #         }
+
+
+    return JsonResponse(data)
 
 def dadosGrafico(request):
     projectdata = ProjectData.get_motifs(57)
@@ -369,9 +453,11 @@ def doc2db(path, project):
             # repeatMotifList.append(repeatMotif)
             # print ('Repeat motif: ', line.split(':')[1])
         if(line.startswith('Start:')):
-            iterations = line.split()[-1].replace("\n","")
+            match = re.findall(r'\d+', line)
+            pos_start = int(match[0])
+            pos_end = int(match[1])
+            iterations = int(match[2])
 
-            # print(line.split()[-1])
         if(line.startswith('Total Imperfections:')):
             tractLength = line.split()[-1].replace("\n","")
             # print(line.split()[-1])
@@ -391,9 +477,10 @@ def doc2db(path, project):
                         }
                     ]
             repeatMotifList.append(motif)
-            projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, project = project)
+            projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, pos_start = pos_start, pos_end = pos_end, project = project)
+            global dic
             global statusProcessament
-            statusProcessament = f'Gravando Linha no Banco {cont} de {len(linhas)}'
+            dic[f'{project.pk}']['statusProcessament'] = f'Gravando Linha no Banco {cont} de {len(linhas)}'
             projectdata.save()
             
             # cursor.execute(f"INSERT INTO DATA (MOTIF, LFLANK, RFLANK, ITERATIONS, TRACKLENGTH, CONSENSUS, CONSULTA, CEPA) VALUES ('{repeatMotif}', ' {lflanking} ', ' {rflanking} ', {iterations}, {tractLength}, '{ consensus}', {1}, '{cepa}');")
@@ -401,10 +488,6 @@ def doc2db(path, project):
         cont += 1
     arquivo.close()
 
-    # Cleanup Database
-    # conn.commit()
-    # cursor.close()
-    # conn.close()
     print("Done.")
 
 def result(request):
@@ -418,28 +501,47 @@ def result(request):
             'listaCepasTotais': request.POST['listaCepasTotais']
             }
     else:
-        dataStatistics = DataStatistic.objects.filter(project=73)
-        totalDataStatistic = DataStatistic.get_total_data_statistic(73)
-        projectdata = ProjectData.get_data(73)
-        motifs = ProjectData.get_motifs(73)
+        dataStatistics = DataStatistic.objects.filter(project=57)
+        totalDataStatistic = DataStatistic.get_total_data_statistic(57)
+        projectdata = ProjectData.get_data(57)
+        motifs = ProjectData.get_motifs(57)
         lista = []
         listaCepas = []
         listaCepasTotais = []
         for i in motifs:
             lista.append(i)
-            listaCepas.append(ProjectData.get_cepas(i[0], 73))
+            listaCepas.append(ProjectData.get_cepas(i[0], 57, i[2]))
 
         for list in listaCepas:
             for l in list:
                 if l[1] not in listaCepasTotais:
                     listaCepasTotais.append(l[1])
-
+        
+        motifs2 = ProjectData.get_motifs2(57)
+        lista2 = []
+        listaCepas2 = []
+        listaCepasTotais2 = []
+        for j in motifs2:
+            lista2.append(j)
+            listaCepas2.append(ProjectData.get_cepas2(j[0], 57))
+        
+        for list2 in listaCepas2:
+            for l2 in list2:
+                if l2[1] not in listaCepasTotais2:
+                    listaCepasTotais2.append(l2[1])
         context = {
             'projectdata' : projectdata,
             'dataStatistics': dataStatistics,
             'totalDataStatistic': totalDataStatistic,
             'lista': lista,
             'listaCepas': listaCepas,
-            'listaCepasTotais': listaCepasTotais
+            'listaCepasTotais': listaCepasTotais,
+            'lista2': lista2,
+            'listaCepas2': listaCepas2,
+            'listaCepasTotais2': listaCepasTotais2,
             }
     return render(request,'result.html', context)
+
+def viewgen(request):
+    return render(request, 'viewgen.html')
+

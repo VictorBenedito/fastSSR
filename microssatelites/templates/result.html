@@ -268,7 +268,7 @@
                         <div class="card-header py-3">
                             <div class="row align-items-center">
                                 <div class="col-10">
-                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Ten most frequency SSR</h6>
+                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Top 10 frequency SSR (Motifs + Iterations)</h6>
                                 </div>
                                 <div class="col-2 text-end">
                                     <a class="dropdown" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
@@ -276,8 +276,8 @@
                                     </a>
                                     <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
                                         <li><h6 class="dropdown-header">Format</h6></li>
-                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Ten most frequency SSR', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
-                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Ten most frequency SSR', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Top 10 frequency SSR (Motifs + Iterations)', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart8, 'Top 10 frequency SSR (Motifs + Iterations)', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
                                     </ul>
                                 </div>
                             </div>
@@ -286,6 +286,39 @@
                         <div class="card-body">
                             <div>
                                 <canvas id="bar"></canvas>
+                            </div>
+                            <hr>
+                            (Colocar informações sobre o Gráfico)
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row justify-content-center">
+                <!-- GRÁFICO 09 -->
+                <div class="col-12">
+                    <div class="card shadow mb-4">
+                        <!-- Card Header - Dropdown -->
+                        <div class="card-header py-3">
+                            <div class="row align-items-center">
+                                <div class="col-10">
+                                    <h6 class="font-weight-bold text-primary" style="margin-bottom: 0;">Top 10 frequency SSR (Only Motifs)</h6>
+                                </div>
+                                <div class="col-2 text-end">
+                                    <a class="dropdown" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <i class="fa fa-download" aria-hidden="true"></i>
+                                    </a>
+                                    <ul class="dropdown-menu" aria-labelledby="navbarDropdown">
+                                        <li><h6 class="dropdown-header">Format</h6></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart9, 'Top 10 frequency SSR (Only Motifs)', 'png')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;PNG</button></li>
+                                        <li><button class="dropdown-item" onClick="downloadGraphic(chart9, 'Top 10 frequency SSR (Only Motifs)', 'jpeg')"><i class="fa fa-file-image" aria-hidden="true"></i>&nbsp;JPEG</button></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Card Body -->
+                        <div class="card-body">
+                            <div>
+                                <canvas id="bar2"></canvas>
                             </div>
                             <hr>
                             (Colocar informações sobre o Gráfico)
@@ -511,6 +544,8 @@
             const graphic6 = document.getElementById('imperfCodxImperfNCodChart');  
             const graphic7 = document.getElementById('codxNCodChart');
             const graphic8 = document.getElementById('bar');
+            const graphic9 = document.getElementById('bar2');
+
             
             const chart1 = new Chart(graphic1, {
                 type: 'doughnut',
@@ -652,7 +687,60 @@
                         },
                         title: {
                             display: true,
-                            text: 'Ten most frequency SSR'
+                            text: 'Top 10 frequency SSR (Motifs + Iterations)'
+                        },
+                    },
+                    interaction: {
+                    intersect: false,
+                    },
+                    scales: {
+                    x: {
+                        stacked: true,
+                    },
+                    y: {
+                        stacked: true
+                    }
+                    }
+                }
+            });
+
+            const chart9 = new Chart(graphic9, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for data in lista2 %}
+                        '{{data.0}}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                    {% for cepa in listaCepasTotais2 %}
+                        {
+                            label: '{{cepa}}',
+                            data: [
+                                {% for listaC in listaCepas2 %}
+                                    {% for dataCepa in listaC %}
+                                        {% if dataCepa.1 == cepa %}
+                                            {{ dataCepa.2 }},
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endfor %}
+                            ],
+                            borderWidth: 1,
+                            hoverOffset: 4,
+                        },
+                    {% endfor %}
+                    ]
+                },
+                options: {
+                    indexAxis: 'y',
+                    responsive: true,
+                    plugins: {
+                        legend:{
+                            position: 'right'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Top 10 frequency SSR (Only Motifs)'
                         },
                     },
                     interaction: {

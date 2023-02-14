@@ -20,12 +20,6 @@ import django_tables2 as tables
     # cepa = models.CharField('Cepa'),
     #  file = models.FileField(upload_to='files'
 
-class Person(models.Model):
-    first_name = models.CharField(max_length=200)
-    last_name = models.CharField(max_length=200)
-    user = models.ForeignKey(get_user_model(), null=True, on_delete=models.CASCADE)
-    birth_date = models.DateField()
-
 class User(models.Model):
     name = models.CharField('Name', max_length=100)
     email = models.EmailField('Email')
@@ -48,6 +42,8 @@ class ProjectData(models.Model):
     iterations = models.IntegerField('Iterations')
     tractlength = models.IntegerField('Tractlength')
     consensus = models.CharField('Consensus', max_length=200)
+    pos_start = models.IntegerField('Start')
+    pos_end = models.IntegerField('End')
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
 
     def my_custom_sql(project):
@@ -81,7 +77,19 @@ class ProjectData(models.Model):
         rows_cepas = cursor.fetchall()
         return rows_cepas
     
-    def get_cepas(motif, project):
+    def get_motifs2(project):
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT motif, COUNT(*) as total FROM microssatelites_projectdata WHERE project_id = {project} GROUP BY motif ORDER BY total DESC LIMIT 10")
+        rows_cepas = cursor.fetchall()
+        return rows_cepas
+
+    def get_cepas(motif, project, iteration):
+        cursor = connection.cursor()
+        cursor.execute(f"SELECT motif, cepa, COUNT(*) FROM microssatelites_projectdata WHERE motif = '{motif}' AND project_id = {project} AND iterations = {iteration} GROUP BY cepa")
+        rows_cepas = cursor.fetchall()
+        return rows_cepas
+    
+    def get_cepas2(motif, project):
         cursor = connection.cursor()
         cursor.execute(f"SELECT motif, cepa, COUNT(*) FROM microssatelites_projectdata WHERE motif = '{motif}' AND project_id = {project} GROUP BY cepa")
         rows_cepas = cursor.fetchall()
