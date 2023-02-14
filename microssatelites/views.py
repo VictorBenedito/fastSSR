@@ -13,15 +13,6 @@ import time
 # Celery Task
 from .tasks import ProcessDownload
 
-statusProcessament = ""
-step01 = False
-step02 = False
-step03 = False
-percent03 = 0
-lastProject = None
-dic = {}
-is_complete = False
-
 def upload_file(request):
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
@@ -33,41 +24,25 @@ def upload_file(request):
     return render(request, 'index.html', {'form': form})
 
 def index(request):
-    global dic
-    
-    global statusProcessament
-    global step01
-    global step02
-    global step03
-    global percent03
-    global lastProject
-
-    statusProcessament = ''
-    step01 = False
-    step02 = False
-    step03 = False
-    percent03 = 0
     if request.method == 'POST':
         form = UploadFileForm(request.POST, request.FILES)
         if form.is_valid():
-            request.session['sname'] = request.POST['name']  
-            request.session['semail'] = request.POST['email']
             # CRIAR O USER NO DB COM OS DADOS DO FORMULÁRIO
             user = User.objects.create(name=request.POST['name'], email=request.POST['email'])
             user.save()
-
+            # ARMAZENA AS INFORMAÇÕES NA SESSÃO
+            request.session['name'] = request.POST['name']  
+            request.session['email'] = request.POST['email']
             # CRIAR O PROJETO NO DB
             project = Project.objects.create(user=user)
             project.save()
-            request.sessiom['project'] = project.pk
-            # Dicionário que contém as informações de status
-            dic[f'{project.pk}'] = {'statusProcessament': 'Iniciando...',
-                                    'step01': False,
-                                    'step02': False,
-                                    'step03': False,
-                                    'percent03': 0
-                                    }
-            lastProject = project.pk
+            request.session['project'] = project.pk
+            request.session['statusProcessament'] = 'Iniciando...'
+            request.session['step01'] = False
+            request.session['step02'] = False
+            request.session['step03'] = False
+            request.session['percent03'] = 0
+
             # CRIAR PASTA DO PROJETO USER[PK]_PROJECT[PK]
             dirproject = f'USER{user.pk}_PROJECT{project.pk}'
             os.system(f'mkdir {dirproject}')
@@ -79,32 +54,31 @@ def index(request):
 
             # TRANSFERIR OS ARQUIVOS PARAS AS SUBPASTAS
             # |---FASTAs
-            dic[f'{project.pk}']['statusProcessament'] = "Upload dos Arquivos..."
-            statusProcessament = "Upload dos Arquivos..."
+            request.session['statusProcessament'] = "Upload dos Arquivos..."
             for f in request.FILES.getlist('fileFasta'):
+                request.session['statusProcessament'] = f'Enviando arquivo {f}...'
                 handle_uploaded_file(f, f'{dirproject}/{subdirectories[2]}')
 
             # |---GBKs
             for f in request.FILES.getlist('fileGBK'):
+                request.session['statusProcessament'] = f'Enviando arquivo {f}...'
                 handle_uploaded_file(f, f'{dirproject}/{subdirectories[3]}')
 
             
             print('================================================================')
             print('=                 Convertendo Arquivos GBKtoPTT                =')
             print('================================================================')
-            dic[f'{project.pk}']['statusProcessament'] = "Convertendo Arquivos GBKtoPTT..."
-            statusProcessament = "Convertendo Arquivos GBKtoPTT..."
+            request.session['statusProcessament'] = "Convertendo Arquivos GBKtoPTT..."
             os.system(f'python3 microssatelites/Scripts/GBKtoPTT.py {dirproject}')
-            dic[f'{project.pk}']['step01'] = True
+            request.session['step01'] = True
 
             print('================================================================')
             print('=                       Executando o IMEx                      =')
             print('================================================================')
-            dic[f'{project.pk}']['statusProcessament'] = "Extraindo Microssatelites..."
-            statusProcessament = "Extraindo Microssatelites..."
+            request.session['statusProcessament'] = "Extraindo Microssatelites..."
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
-            dic[f'{project.pk}']['step02'] = True
+            request.session['step02'] = True
 
             # os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             # os.system(f'cp -R IMEx_OUTPUT {dirproject}/{subdirectories[0]}/OutPutProcessed')
@@ -112,10 +86,9 @@ def index(request):
             print('================================================================')
             print('=                Processando Arquivos do IMEx                  =')
             print('================================================================')
-            dic[f'{project.pk}']['statusProcessament'] = "Extraindo Dados dos Microssatelites..."
-            statusProcessament = "Extraindo Dados dos Microssatelites..."
+            request.session['statusProcessament'] = "Extraindo Dados dos Microssatelites..."
             
-            # Abrir Pasta do IMEx_OUTPUT
+            # Ler Pasta do IMEx_OUTPUT
             files = os.listdir(f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT')
             if '.DS_Store' in files:
                 files.remove('.DS_Store')
@@ -131,8 +104,7 @@ def index(request):
                     # path_file_out = 'UserOutputs/OutPutProcessed/'
                     # os.system('python3 microssatelites/Scripts/newRead.py ' + path_file_aln + ' ' + str(project.pk))
                     doc2db(path_file_aln, project)
-                    dic[f'{project.pk}']['percent03'] = round(cont/len(files) * 100, 1)
-                    percent03 = round(cont/len(files) * 100, 1)
+                    request.session['percent03'] = round(cont/len(files) * 100, 1)
                 else:
                     print('Arquivo de Entrada não encontrado!')
                 cont+=1
@@ -140,10 +112,8 @@ def index(request):
                 # if os.path.exists(f'{dirproject}/UserOutputs/OutPutProcessed'):
                 #     path_file_out = f'{dirproject}/UserOutputs/OutPutProcessed/'
                 #     os.system('python3 microssatelites/Scripts/read.py ' + path_file + ' > '+ path_file_out + i +'.txt')
-            dic[f'{project.pk}']['statusProcessament'] = "Finalizando..."
-            dic[f'{project.pk}']['step03'] = True
-            step03 = True
-            statusProcessament = "Finalizando..."
+            request.session['statusProcessament'] = "Finalizando..."
+            request.session['step03'] = True
             print('================================================================')
             print('=                  Dados para os Graficos                      =')
             print('================================================================')
@@ -190,19 +160,26 @@ def handle_uploaded_file(f, directory):
 
 def get_processing_status(request):
   # Insira aqui o código para obter o status do processamento atual
-    nome = request.session.get('sname', '')
-    request.session['sname'] = 'Fulano'
-    request.session['semail'] = 'fulano@gmail.com'
-    
-    if nome == '':
+    project = request.session.get('project', '')
+    if project == '':
+        request.session['step01'] = False
+        request.session['step02'] = False
+        request.session['step03'] = False
+        request.session['percent03'] = 0
         data = {
-            'nome': 'Sessão Vazia',
-            'email': 'Sessão Vazia'
+            'statusProcessament': 'Iniciando...',
+            'step01' : request.session['step01'],
+            'step02' : request.session['step02'],
+            'step03' : request.session['step03'],
+            'percent03' : request.session['percent03']
         }
     else:    
         data = {
-            'nome': request.session['sname'],
-            'email': request.session['semail']
+            'statusProcessament': request.session['statusProcessament'],
+            'step01' : request.session['step01'],
+            'step02' : request.session['step02'],
+            'step03' : request.session['step03'],
+            'percent03' : request.session['percent03']
         }
     # if request.method == 'GET':
     #     get = request.GET
@@ -430,7 +407,7 @@ def extractSummary(file, project):
     dataStatistic.save()
     return dataStatistic
 
-def doc2db(path, project):
+def doc2db(request, path, project):
     arquivo = open(path, 'r')
     linhas = arquivo.readlines()
     cont = 0
@@ -478,9 +455,7 @@ def doc2db(path, project):
                     ]
             repeatMotifList.append(motif)
             projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, pos_start = pos_start, pos_end = pos_end, project = project)
-            global dic
-            global statusProcessament
-            dic[f'{project.pk}']['statusProcessament'] = f'Gravando Linha no Banco {cont} de {len(linhas)}'
+            request.session['statusProcessament'] = f'Gravando Linha no Banco {cont} de {len(linhas)}'
             projectdata.save()
             
             # cursor.execute(f"INSERT INTO DATA (MOTIF, LFLANK, RFLANK, ITERATIONS, TRACKLENGTH, CONSENSUS, CONSULTA, CEPA) VALUES ('{repeatMotif}', ' {lflanking} ', ' {rflanking} ', {iterations}, {tractLength}, '{ consensus}', {1}, '{cepa}');")
