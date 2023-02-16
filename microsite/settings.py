@@ -56,6 +56,9 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'microsite.urls'
 
+SESSION_ENGINE = 'django.contrib.sessions.backends.file'
+SESSION_SAVE_EVERY_REQUEST = False
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',

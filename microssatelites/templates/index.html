@@ -39,7 +39,7 @@
                       text-align: left;
                     }
                   </style>
-                  <table class="table table-item-center">
+                  <table class="table table-item-center" style="display: None;" id="tableSteps">
                     <thead>
                       <tr>
                         <th class="align-items-center">
@@ -61,6 +61,8 @@
                             width: 10px;
                             height: 10px;
                             margin: 10px auto;
+                            margin-top: 0px;
+                            margin-bottom: 0px;
                             border-radius: 50px;
                           }
 
@@ -70,47 +72,52 @@
                             -moz-animation: right 1s infinite ease-in-out;
                             animation: right 1s infinite ease-in-out;
                           }
-
                           .ball:nth-child(2) {
-                            background: #ffffff;
-                            -webkit-animation: left 1.1s infinite ease-in-out;
-                            -moz-animation: left 1.1s infinite ease-in-out;
-                            animation: left 1.1s infinite ease-in-out;
+                            -webkit-animation: left 1s infinite ease-in-out;
+                            -moz-animation: left 1s infinite ease-in-out;
+                            animation: left 1s infinite ease-in-out;
                           }
-
                           .ball:nth-child(3) {
                             background: #ffffff;
-                            -webkit-animation: right 1.05s infinite ease-in-out;
-                            -moz-animation: right 1.05s infinite ease-in-out;
-                            animation: right 1.05s infinite ease-in-out;
+                            -webkit-animation: right 1s infinite ease-in-out;
+                            -moz-animation: right 1s infinite ease-in-out;
+                            animation: right 1s infinite ease-in-out;
+                            animation-delay: 0.1s;
                           }
 
                           .ball:nth-child(4) {
-                            background: #ffffff;
-                            -webkit-animation: left 1.15s infinite ease-in-out;
-                            -moz-animation: left 1.15s infinite ease-in-out;
-                            animation: left 1.15s infinite ease-in-out;
+                            -webkit-animation: left 1s infinite ease-in-out;
+                            -moz-animation: left 1s infinite ease-in-out;
+                            animation: left 1s infinite ease-in-out;
+                            animation-delay: 0.1s;
                           }
 
                           .ball:nth-child(5) {
                             background: #ffffff;
-                            -webkit-animation: right 1.1s infinite ease-in-out;
-                            -moz-animation: right 1.1s infinite ease-in-out;
-                            animation: right 1.1s infinite ease-in-out;
+                            -webkit-animation: right 1s infinite ease-in-out;
+                            -moz-animation: right 1s infinite ease-in-out;
+                            animation: right 1s infinite ease-in-out;
+                            animation-delay: 0.2s;
                           }
-
                           .ball:nth-child(6) {
-                            background: #ffffff;
-                            -webkit-animation: left 1.05s infinite ease-in-out;
-                            -moz-animation: left 1.05s infinite ease-in-out;
-                            animation: left 1.05s infinite ease-in-out;
+                            -webkit-animation: left 1s infinite ease-in-out;
+                            -moz-animation: left 1s infinite ease-in-out;
+                            animation: left 1s infinite ease-in-out;
+                            animation-delay: 0.2s;
                           }
-
                           .ball:nth-child(7) {
                             background: #ffffff;
                             -webkit-animation: right 1s infinite ease-in-out;
                             -moz-animation: right 1s infinite ease-in-out;
                             animation: right 1s infinite ease-in-out;
+                            animation-delay: 0.3s;
+                          }
+
+                          .ball:nth-child(8) {
+                            -webkit-animation: left 1s infinite ease-in-out;
+                            -moz-animation: left 1s infinite ease-in-out;
+                            animation: left 1s infinite ease-in-out;
+                            animation-delay: 0.3s;
                           }
 
                           @-webkit-keyframes right {
@@ -194,6 +201,7 @@
                             <div class="ball" style="background: #4e73df"></div>
                             <div class="ball" style="background: #4e73df"></div>
                             <div class="ball" style="background: #4e73df"></div>
+                            <div class="ball" style="background: #4e73df"></div>
                           </div>
                           <h1 id="check01" style="display: none"><i class="fa fa-check-circle text-primary" aria-hidden="true"></i></h1>
                           {% comment %} <div class="spinner-grow text-primary" id="spinner01" style="display: none" role="status">
@@ -209,6 +217,7 @@
                               <div class="ball" style="background: #1cc88a"></div>
                               <div class="ball" style="background: #1cc88a"></div>
                               <div class="ball" style="background: #1cc88a"></div>
+                              <div class="ball" style="background: #1cc88a"></div>
                           </div>
                           <h1 id="check02" style="display: none"><i class="fa fa-check-circle text-success" aria-hidden="true"></i></h1>
                           {% comment %} <div class="spinner-grow text-success" id="spinner02" style="display: none" role="status">
@@ -217,6 +226,7 @@
                         </td>
                         <td>
                           <div id="spinner03" style="display: none">
+                            <div class="ball" style="background: #36b9cc"></div>
                             <div class="ball" style="background: #36b9cc"></div>
                             <div class="ball" style="background: #36b9cc"></div>
                             <div class="ball" style="background: #36b9cc"></div>
@@ -431,8 +441,15 @@
   }
 
   document.getElementById('upload-btn').addEventListener('click', function(){
-    $("#upload-form").hide();
-    getProcessingStatus();
+    $("#upload-form").toggle("fast");
+    $("#tableSteps").toggle("fast");
+    $("#areaCode").toggle("fast");
+    $("#spinner01").toggle("slow");
+    $("#spinner02").toggle("slow");
+    $("#spinner03").toggle("slow");
+
+
+    {% comment %} getProcessingStatus(); {% endcomment %}
   });
 
 </script>
@@ -440,17 +457,18 @@
   function spinner(){
     $("#spinner").show();
     $("#submit").hide();
-    $("#upload-form").hide();
-    $("#areaCode").show();
+    $("#upload-form").toggle("fast");
+    $("#tableSteps").toggle("fast");
+    $("#areaCode").toggle("fast");
     //Atualiza as informações do Upload
-    upload();
-    // Iniciar a obtenção do status do processamento
+    //upload();
+    // Iniciar a obtenção do status do processamento e upload
     getProcessingStatus();
+    getFileUploadProcessingStatus();
   }
 
   function exibir_ocultar(){
     var valor = $("#params").val();
-
     if(valor == 1){
          $("#custom_params").show();
          $("#paramDefault").hide();
@@ -476,9 +494,6 @@
 
   // Função para atualizar a barra de progresso do processamento
   function updateProgress(statusProcessament, step01, step02, step03, percentage) {
-    {% comment %}var progress = document.getElementById("progress");
-    progress.style.width = percent + "%"; {% endcomment %}
-
     var progress_bar_03 = document.getElementById('progress_bar_03');
     var labelStatus = document.getElementById('labelStatus');
     var labelStep = document.getElementById('labelStep');
@@ -500,6 +515,8 @@
             progress_bar_02.innerHTML=""+100+"%";
             if(step03 == false){
               $("#spinner03").show();
+            }else if(step03 == true){
+              
             }
         }
     }
@@ -521,49 +538,23 @@
       }
     });
   }
-</script>
-<!-- <script>
-  var upload_form = document.getElementById('upload-form');
-  var input_files = document.getElementById('id_fileFasta');
-  var progressbar = document.getElementById('progressbar')
-  
-  $("#upload_form").submit(function(e){
-    e.preventDefault();
-    $form = $(this);
-    var formData = new FormData(this)
-    const media_data = input_files.files[0];
-    if(media_data != null){
 
-    }
+  function fileUploadProgress(file, filePercent) {
+    $("#progress_div").show();
+    document.getElementById('progress_bar').style["width"]=""+filePercent+"%";
+    document.getElementById('progress_bar').innerHTML=""+filePercent+"%";
+    document.getElementById('labelbar').innerHTML="File: "+file;
+  }
 
+  function getFileUploadProcessingStatus(){
     $.ajax({
-      type: 'POST',
-      url:'/',
-      data: formData,
-      dataType: 'json',
-      beforeSend: function(){
-
-      },
-      xhr: function(){
-        const xhr = new window.XMLHttpRequest();
-        xhr.upload.addEventListener('progress', e=>{
-          console.log(e);
-        });
-        return xhr
-
-      },
-      success: function(response){
-
-      },
-      error: function(err){
-        console.log(err);
-      },
-      cache: false,
-      contentType: false,
-      processData: false
+      type: "GET",
+      url: "/get_uploaded_file/",
+      success: function(data){
+        fileUploadProgress(data.file, data.filePercent);
+        setTimeout(getFileUploadProcessingStatus, 1000);
+      }
     });
-  });
-
-
-</script> -->
+  }
+</script>
 {% endblock %}

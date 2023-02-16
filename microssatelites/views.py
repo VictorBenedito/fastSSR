@@ -1,9 +1,11 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages
 from .forms import NameForm, LoginForm, UploadFileForm, DownloadForm
 from .tables import PersonTable
 from django.http import HttpResponseRedirect, HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from zipfile import ZipFile
 from .models import User, Project, ProjectData, DataStatistic
 import pandas as pd
 import os, re
@@ -37,11 +39,7 @@ def index(request):
             project = Project.objects.create(user=user)
             project.save()
             request.session['project'] = project.pk
-            request.session['statusProcessament'] = 'Iniciando...'
-            request.session['step01'] = False
-            request.session['step02'] = False
-            request.session['step03'] = False
-            request.session['percent03'] = 0
+            request.session.save()
 
             # CRIAR PASTA DO PROJETO USER[PK]_PROJECT[PK]
             dirproject = f'USER{user.pk}_PROJECT{project.pk}'
@@ -55,30 +53,35 @@ def index(request):
             # TRANSFERIR OS ARQUIVOS PARAS AS SUBPASTAS
             # |---FASTAs
             request.session['statusProcessament'] = "Upload dos Arquivos..."
+            request.session.save()
             for f in request.FILES.getlist('fileFasta'):
-                request.session['statusProcessament'] = f'Enviando arquivo {f}...'
-                handle_uploaded_file(f, f'{dirproject}/{subdirectories[2]}')
+                handle_uploaded_file(request, f, f'{dirproject}/{subdirectories[2]}')
 
             # |---GBKs
             for f in request.FILES.getlist('fileGBK'):
-                request.session['statusProcessament'] = f'Enviando arquivo {f}...'
-                handle_uploaded_file(f, f'{dirproject}/{subdirectories[3]}')
-
+                handle_uploaded_file(request, f, f'{dirproject}/{subdirectories[3]}')
+            
+            # request.session['totalUpload'] = True
+            request.session.save()
             
             print('================================================================')
             print('=                 Convertendo Arquivos GBKtoPTT                =')
             print('================================================================')
             request.session['statusProcessament'] = "Convertendo Arquivos GBKtoPTT..."
+            request.session.save()
+
             os.system(f'python3 microssatelites/Scripts/GBKtoPTT.py {dirproject}')
             request.session['step01'] = True
-
+            request.session.save()
             print('================================================================')
             print('=                       Executando o IMEx                      =')
             print('================================================================')
             request.session['statusProcessament'] = "Extraindo Microssatelites..."
+            request.session.save()
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
             request.session['step02'] = True
+            request.session.save()
 
             # os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
             # os.system(f'cp -R IMEx_OUTPUT {dirproject}/{subdirectories[0]}/OutPutProcessed')
@@ -87,7 +90,7 @@ def index(request):
             print('=                Processando Arquivos do IMEx                  =')
             print('================================================================')
             request.session['statusProcessament'] = "Extraindo Dados dos Microssatelites..."
-            
+            request.session.save()
             # Ler Pasta do IMEx_OUTPUT
             files = os.listdir(f'{dirproject}/UserOutputs/OutPutProcessed/IMEx_OUTPUT')
             if '.DS_Store' in files:
@@ -105,15 +108,13 @@ def index(request):
                     # os.system('python3 microssatelites/Scripts/newRead.py ' + path_file_aln + ' ' + str(project.pk))
                     doc2db(request, path_file_aln, project)
                     request.session['percent03'] = round(cont/len(files) * 100, 1)
+                    request.session.save()
                 else:
                     print('Arquivo de Entrada não encontrado!')
                 cont+=1
-
-                # if os.path.exists(f'{dirproject}/UserOutputs/OutPutProcessed'):
-                #     path_file_out = f'{dirproject}/UserOutputs/OutPutProcessed/'
-                #     os.system('python3 microssatelites/Scripts/read.py ' + path_file + ' > '+ path_file_out + i +'.txt')
             request.session['statusProcessament'] = "Finalizando..."
             request.session['step03'] = True
+            request.session.save()
             print('================================================================')
             print('=                  Dados para os Graficos                      =')
             print('================================================================')
@@ -139,41 +140,53 @@ def index(request):
             for j in motifs2:
                 lista2.append(j)
                 listaCepas2.append(ProjectData.get_cepas2(j[0], project.pk))
-            
             for list2 in listaCepas2:
                 for l2 in list2:
                     if l2[1] not in listaCepasTotais2:
                         listaCepasTotais2.append(l2[1])
             return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'lista2':lista2, 'listaCepas':listaCepas, 'listaCepas2': listaCepas2, 'listaCepasTotais':listaCepasTotais, 'listaCepasTotais2':listaCepasTotais2})
     else:
-        form = UploadFileForm()
-    return render(request, 'index.html', {'form': form})
-
-# FUNÇÕES ACESSÓRIAS
-@csrf_exempt
-def handle_uploaded_file(f, directory):
-    destination = open(f'{directory}/{f}', 'wb+')
-    for chunk in f.chunks():
-        destination.write(chunk)
-    destination.close()
-    return JsonResponse({'status': 'success'})
-
-def get_processing_status(request):
-  # Insira aqui o código para obter o status do processamento atual
-    project = request.session.get('project', '')
-    if project == '':
+        request.session['project'] = None
+        request.session['statusProcessament'] = None
         request.session['step01'] = False
         request.session['step02'] = False
         request.session['step03'] = False
         request.session['percent03'] = 0
-        data = {
-            'statusProcessament': 'Iniciando...',
-            'step01' : request.session['step01'],
-            'step02' : request.session['step02'],
-            'step03' : request.session['step03'],
-            'percent03' : request.session['percent03']
-        }
-    else:    
+        request.session['filePercent'] = 0
+        request.session['totalUpload'] = False
+        form = UploadFileForm()
+    return render(request, 'index.html', {'form': form})
+
+# FUNÇÕES ACESSÓRIAS
+def handle_uploaded_file(request, f, directory):
+    destination = open(f'{directory}/{f}', 'wb+')
+    file_size = f.size
+    uploaded_size = 0
+    for chunk in f.chunks():
+        destination.write(chunk)
+        uploaded_size += len(chunk)
+        percentage = round((uploaded_size / file_size) * 100)
+        request.session['statusProcessament'] = f'Enviando arquivo {f} {percentage}%'
+        request.session['filePercent'] = percentage
+        request.session.save()
+    destination.close()
+
+
+def processament(request):
+    # Seu código de processamento aqui
+    for i in range(100):
+        username = f"user{i}"
+        request.session['temp_username'] = username
+        # request.session.save()
+        time.sleep(1)
+    # Atualizando valor 'executing' após o loop
+    return render(request, 'processament.html')
+
+def get_processing_status(request):
+    # Insira aqui o código para obter o status do processamento atual
+    project = request.session.get('project', None)
+    
+    if project:
         data = {
             'statusProcessament': request.session['statusProcessament'],
             'step01' : request.session['step01'],
@@ -181,53 +194,31 @@ def get_processing_status(request):
             'step03' : request.session['step03'],
             'percent03' : request.session['percent03']
         }
-    # if request.method == 'GET':
-    #     get = request.GET
+    else:
+        data = {
+            'statusProcessament': 'Iniciando...',
+            'step01' : False,
+            'step02' : False,
+            'step03' : False,
+            'percent03' : 0
+        }
+    return JsonResponse(data)
 
-        # try:
-        #     if 'project' in get:
-        #         # Retornar o status do processamento como resposta JSON
-        #         data = {
-        #             'haveProject': True,
-        #             'project': dic[get['project']],
-        #             'statusProcessament': dic[get['project']]['statusProcessament'],
-        #             'step01': dic[get['project']]['step01'],
-        #             'step02': dic[get['project']]['step02'],
-        #             'step03': dic[get['project']]['step03'],
-        #             'precent_complete': dic[get['project']]['percent03'],
-        #         }
-        #     else:  
-        #         if lastProject != None:
-        #             data = {
-        #                 'haveProject': False,
-        #                 'statusProcessament': 'Iniciando...',
-        #                 'step01': False,
-        #                 'step02': False,
-        #                 'step03': False,
-        #                 'precent_complete': 0,
-        #                 'project': lastProject
-        #             }
-        #         else:
-        #             data = {
-        #                 'haveProject': False,
-        #                 'statusProcessament': 'Buscando Projeto...',
-        #                 'step01': False,
-        #                 'step02': False,
-        #                 'step03': False,
-        #                 'precent_complete': 0,
-        #                 'project': False
-        #             }
-        # except KeyError as err:
-        #     data = {
-        #             'haveProject': False,
-        #             'statusProcessament': 'ERRO! Projecto não existe!',
-        #             'step01': False,
-        #             'step02': False,
-        #             'step03': False,
-        #             'precent_complete': 0
-        #         }
+def get_uploaded_file(request):
+    file = request.session.get('file', None)
 
-
+    if file:
+        data = {
+            'file' : request.session['file'],
+            'filePercent' : request.session['filePercent'],
+            'totalUpload' : request.session['totalUpload']
+        }
+    else:
+        data = {
+            'file' : 'Waiting file...',
+            'filePercent' : 0,
+            'totalUpload' : False
+        }
     return JsonResponse(data)
 
 def dadosGrafico(request):
@@ -456,6 +447,7 @@ def doc2db(request, path, project):
             repeatMotifList.append(motif)
             projectdata = ProjectData.objects.create(cepa = cepa, motif = repeatMotif, lflanking = lflanking ,  rflanking = rflanking , iterations = iterations, tractlength = tractLength,  consensus = consensus, pos_start = pos_start, pos_end = pos_end, project = project)
             request.session['statusProcessament'] = f'Gravando Linha no Banco {cont} de {len(linhas)}'
+            request.session.save()
             projectdata.save()
             
             # cursor.execute(f"INSERT INTO DATA (MOTIF, LFLANK, RFLANK, ITERATIONS, TRACKLENGTH, CONSENSUS, CONSULTA, CEPA) VALUES ('{repeatMotif}', ' {lflanking} ', ' {rflanking} ', {iterations}, {tractLength}, '{ consensus}', {1}, '{cepa}');")
@@ -474,7 +466,7 @@ def result(request):
             'lista': request.POST['lista'],
             'listaCepas': request.POST['listaCepas'],
             'listaCepasTotais': request.POST['listaCepasTotais']
-            }
+        }
     else:
         dataStatistics = DataStatistic.objects.filter(project=57)
         totalDataStatistic = DataStatistic.get_total_data_statistic(57)
@@ -506,6 +498,7 @@ def result(request):
                     listaCepasTotais2.append(l2[1])
         context = {
             'projectdata' : projectdata,
+            'project': 57,
             'dataStatistics': dataStatistics,
             'totalDataStatistic': totalDataStatistic,
             'lista': lista,
@@ -514,8 +507,37 @@ def result(request):
             'lista2': lista2,
             'listaCepas2': listaCepas2,
             'listaCepasTotais2': listaCepasTotais2,
-            }
+        }
     return render(request,'result.html', context)
+
+def download_folder(request):
+    
+    folder_name = 'USER1_PROJECT1'
+
+    # Caminho completo para a pasta a ser compactada e baixada
+    folder_path = os.path.join(folder_name)
+
+    # Nome do arquivo zip que será baixado
+    zip_filename = f'{folder_name}.zip'
+
+    # Abre o arquivo zip para gravação
+    with ZipFile(zip_filename, 'w') as zip_file:
+        # Percorre a pasta e adiciona cada arquivo a o arquivo zip
+        for root, dirs, files in os.walk(folder_path):
+            for file in files:
+                file_path = os.path.join(root, file)
+                zip_file.write(file_path, os.path.relpath(file_path, folder_path))
+
+    # Abre o arquivo zip para leitura e cria uma resposta HTTP para download
+    with open(zip_filename, 'rb') as zip_file:
+        response = HttpResponse(zip_file.read(), content_type='application/zip')
+        response['Content-Disposition'] = f'attachment; filename="{zip_filename}"'
+
+    # Remove o arquivo zip do disco rígido
+    os.remove(zip_filename)
+
+    # Retorna a resposta HTTP para download
+    return response
 
 def viewgen(request):
     return render(request, 'viewgen.html')
