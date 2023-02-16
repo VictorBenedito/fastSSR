@@ -468,37 +468,38 @@ def result(request):
             'listaCepasTotais': request.POST['listaCepasTotais']
         }
     else:
-        dataStatistics = DataStatistic.objects.filter(project=57)
-        totalDataStatistic = DataStatistic.get_total_data_statistic(57)
-        projectdata = ProjectData.get_data(57)
-        motifs = ProjectData.get_motifs(57)
+        dataStatistics = DataStatistic.objects.filter(project=54)
+        totalDataStatistic = DataStatistic.get_total_data_statistic(54)
+        projectdata = ProjectData.get_data(54)
+        motifs = ProjectData.get_motifs(54)
         lista = []
         listaCepas = []
         listaCepasTotais = []
         for i in motifs:
             lista.append(i)
-            listaCepas.append(ProjectData.get_cepas(i[0], 57, i[2]))
+            listaCepas.append(ProjectData.get_cepas(i[0], 54, i[2]))
 
         for list in listaCepas:
             for l in list:
                 if l[1] not in listaCepasTotais:
                     listaCepasTotais.append(l[1])
         
-        motifs2 = ProjectData.get_motifs2(57)
+        motifs2 = ProjectData.get_motifs2(54)
         lista2 = []
         listaCepas2 = []
         listaCepasTotais2 = []
         for j in motifs2:
             lista2.append(j)
-            listaCepas2.append(ProjectData.get_cepas2(j[0], 57))
+            listaCepas2.append(ProjectData.get_cepas2(j[0], 54))
         
         for list2 in listaCepas2:
             for l2 in list2:
                 if l2[1] not in listaCepasTotais2:
                     listaCepasTotais2.append(l2[1])
+        pk = {'pk': 54}
         context = {
             'projectdata' : projectdata,
-            'project': 57,
+            'project': pk,
             'dataStatistics': dataStatistics,
             'totalDataStatistic': totalDataStatistic,
             'lista': lista,
@@ -510,10 +511,10 @@ def result(request):
         }
     return render(request,'result.html', context)
 
-def download_folder(request):
-    
-    folder_name = 'USER1_PROJECT1'
+def download_folder(request, project):
 
+    folder_name = 'USER'+ project + '_PROJECT' + project
+    
     # Caminho completo para a pasta a ser compactada e baixada
     folder_path = os.path.join(folder_name)
 

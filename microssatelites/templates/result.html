@@ -30,9 +30,10 @@
                     <hr>
                 </div>
                 <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                    <h1 class="h3 mb-0 text-gray-800">Project: {{project}}</h1>
-                    <a href="" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Download Report Folder {{project}}</a>
+                    <h1 class="h3 mb-0 text-gray-800">Project: {{project.pk}}</h1>
+                    <a href="{% url 'download_folder' project.pk %}" class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"><i class="fas fa-download fa-sm text-white-50"></i> Download Report Folder</a>
                 </div>
+                <div class="dt-buttons">          <button class="dt-button buttons-copy buttons-html5" tabindex="0" aria-controls="dataTable" type="button"><span>Copy</span></button> <button class="dt-button buttons-csv buttons-html5" tabindex="0" aria-controls="dataTable" type="button"><span>CSV</span></button> <button class="dt-button buttons-excel buttons-html5" tabindex="0" aria-controls="dataTable" type="button"><span>Excel</span></button> <button class="dt-button buttons-pdf buttons-html5" tabindex="0" aria-controls="dataTable" type="button"><span>PDF</span></button> <button class="dt-button buttons-print" tabindex="0" aria-controls="dataTable" type="button"><span>Print</span></button> </div>
             </div>
 
             <!-- ÁREA DOS GRÁFICOS -->
