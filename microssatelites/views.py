@@ -63,6 +63,7 @@ def index(request):
             
             # request.session['totalUpload'] = True
             request.session.save()
+            start_time = time.time()
             
             print('================================================================')
             print('=                 Convertendo Arquivos GBKtoPTT                =')
@@ -78,8 +79,48 @@ def index(request):
             print('================================================================')
             request.session['statusProcessament'] = "Extraindo Microssatelites..."
             request.session.save()
+            paramsDefaul = request.POST['paramsRadio']
+            
+            if paramsDefaul == '0':
+                params = '1 1 1 2 2 2 10 10 10 10 10 10 12 6 4 3 3 3 15 1 1 1 100 3 0'
+            else:
+                impMono = request.POST['impMono'] 
+                impDi = request.POST['impDi']
+                impTri = request.POST['impTri']
+                impTetra = request.POST['impTetra']
+                impPenta = request.POST['impPenta']
+                impHexa = request.POST['impHexa']
+                impPerMono = request.POST['impPerMono'] 
+                impPerDi = request.POST['impPerDi']
+                impPerTri = request.POST['impPerTri']
+                impPerTetra = request.POST['impPerTetra']
+                impPerPenta = request.POST['impPerPenta']
+                impPerHexa = request.POST['impPerHexa']
+                minRepMono = request.POST['minRepMono'] 
+                minRepDi = request.POST['minRepDi']
+                minRepTri = request.POST['minRepTri']
+                minRepTetra = request.POST['minRepTetra']
+                minRepPenta = request.POST['minRepPenta']
+                minRepHexa = request.POST['minRepHexa']
+                sizeFlan = request.POST['sizeFlan']
+                genAlin = request.POST.get('genAlin')
+                if genAlin == 'on':
+                    genAlin = 1
+                else:
+                    genAlin = 0
+                idCod = request.POST.get('idCod')
+                if idCod == 'on':
+                    idCod = 1
+                else:
+                    idCod = 0
+                maxComp = request.POST['maxComp']
+                standLevel = request.POST['standLevel']
+                ssrType = request.POST['ssrType']
+                
+                params = f"{impMono} {impDi} {impTri} {impTetra} {impPenta} {impHexa} {impPerMono} {impPerDi} {impPerTri} {impPerTetra} {impPerPenta} {impPerHexa} {minRepMono} {minRepDi} {minRepTri} {minRepTetra} {minRepPenta} {minRepHexa} {sizeFlan} {genAlin} 1 {idCod} {maxComp} {standLevel} {ssrType}"
+
             os.system(f'mkdir {dirproject}/{subdirectories[0]}/OutPutProcessed')
-            os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject}')
+            os.system(f'python3 microssatelites/Scripts/IMEX.py {dirproject} {params}')
             request.session['step02'] = True
             request.session.save()
 
@@ -144,7 +185,9 @@ def index(request):
                 for l2 in list2:
                     if l2[1] not in listaCepasTotais2:
                         listaCepasTotais2.append(l2[1])
-            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'lista2':lista2, 'listaCepas':listaCepas, 'listaCepas2': listaCepas2, 'listaCepasTotais':listaCepasTotais, 'listaCepasTotais2':listaCepasTotais2})
+            end_time = time.time()
+            time_exec = time.strftime('%H:%M:%S', time.localtime(end_time - start_time))
+            return render(request,'result.html', {'user': user, 'project': project, 'dataStatistics': dataStatistics, 'projectdata': projectdata, 'totalDataStatistic': totalDataStatistic, 'lista':lista, 'lista2':lista2, 'listaCepas':listaCepas, 'listaCepas2': listaCepas2, 'listaCepasTotais':listaCepasTotais, 'listaCepasTotais2':listaCepasTotais2, 'time_exec': time_exec})
     else:
         request.session['project'] = None
         request.session['statusProcessament'] = None

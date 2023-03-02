@@ -8,7 +8,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(label='Password',widget=forms.PasswordInput)
 
 class UploadFileForm(forms.Form):
-    name = forms.CharField(label='Name', max_length = 100, widget=forms.TextInput(attrs={
+    name = forms.CharField(label='Name', required=False, max_length = 100, widget=forms.TextInput(attrs={
                                     'placeholder':'Enter your name...',
                                     'class': 'form-control',
                                  }))

@@ -293,30 +293,167 @@
                       <h1 class="h3 mb-0 text-gray-800">Input Files</h1>
                       <hr class="sidebar-divider my-0"><br>
                       <div class="row align-items-center">
-                        <div class="col mr-2">
-                            <!-- Input FASTA -->
-                            <div class="form-group">
-                                <label for="fileFasta" class="form-label">{{ form.fileFasta.label }}</label><br>
-                                <div class="file-drop-area col col-xl-6">
-                                  <span class="choose-file-button">Choose files</span>
-                                  <span class="file-message">or drag and drop files here</span>
-                                  {{ form.fileFasta }}
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col mr-2">
-                            <!-- Input fileGBK -->
-                            <div class="form-group">
-                                <label for="fileGBK" class="form-label">{{ form.fileGBK.label }}</label><br>
-                                <div class="file-drop-area">
-                                  <span class="choose-file-button">Choose files</span>
-                                  <span class="file-message">or drag and drop files here</span>
-                                  {{ form.fileGBK }}
-                                </div>
-                            </div>
-                        </div>
+                          <div class="col mr-2">
+                              <!-- Input FASTA -->
+                              <div class="form-group">
+                                  <label for="fileFasta" class="form-label">{{ form.fileFasta.label }}</label><br>
+                                  <div class="file-drop-area col col-xl-6">
+                                    <span class="choose-file-button">Choose files</span>
+                                    <span class="file-message">or drag and drop files here</span>
+                                    {{ form.fileFasta }}
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="col mr-2">
+                              <!-- Input fileGBK -->
+                              <div class="form-group">
+                                  <label for="fileGBK" class="form-label">{{ form.fileGBK.label }}</label><br>
+                                  <div class="file-drop-area">
+                                    <span class="choose-file-button">Choose files</span>
+                                    <span class="file-message">or drag and drop files here</span>
+                                    {{ form.fileGBK }}
+                                  </div>
+                              </div>
+                          </div>
                         </div><br>
                         <hr class="sidebar-divider my-0"><br>
+                        <div class="row align-items-center">
+                          <div class="col mr-2">
+                            <div class="form-check">
+                              <input class="form-check-input" onclick="showParams()" type="radio" value="0" name="paramsRadio" id="paramsRadio" checked>
+                              <label class="form-check-label" for="paramsRadio">
+                                Default Params
+                              </label>
+                            </div>
+                            <div class="form-check">
+                              <input class="form-check-input" onclick="showParams()" type="radio" value="1" name="paramsRadio" id="paramsRadio">
+                              <label class="form-check-label" for="paramsRadio">
+                                Custom Params
+                              </label>
+                            </div>
+                          </div>
+                        </div><br>
+                        <div id="custom_params" style="display: none"> 
+                          <!-- Mensagem de Informação -->
+                          <div class="toast-container position-absolute p-3 top-50 start-0 translate-middle-y" style="z-index: 11">
+                            <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+                              <div class="toast-header">
+                                <strong class="me-auto">A) Imperfection Limit/Repeat Unit (mismatches allowed)</strong>
+                                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+                              </div>
+                              <div class="toast-body">
+                                Imperfection Limit of a repeat size (Ex:tri,penta) is the number of point mutations (substitutions and indels) that can be allowed in a repeat unit (word) so that it can be considered as a match."
+                                For example, 2 words ATGC and ATGG can be considered as matching repeat units if the imperfection limit (mismatches allowed) for tetranucleotide repeats is set as 1 or more.
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(1)"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">A) Imperfection Limit/Repeat Unit (mismatches allowed)</span>
+                              <input type="text" name="impMono" placeholder="Mono" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impDi" placeholder="Di" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impTri" placeholder="Tri" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impTetra" placeholder="Tetra" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPenta" placeholder="Penta" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impHexa" placeholder="Hexa" aria-label="mismatchesmono" class="form-control">
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(2)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">B) Imperfection Percentage</span>
+                              <input type="text" name="impPerMono" placeholder="Mono" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPerDi" placeholder="Di" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPerTri" placeholder="Tri" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPerTetra" placeholder="Tetra" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPerPenta" placeholder="Penta" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="impPerHexa" placeholder="Hexa" aria-label="mismatchesmono" class="form-control">
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(3)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">C) Minimum Repeat Number</span>
+                              <input type="text" name="minRepMono" placeholder="Mono" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="minRepDi" placeholder="Di" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="minRepTri" placeholder="Tri" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="minRepTetra" placeholder="Tetra" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="minRepPenta" placeholder="Penta" aria-label="mismatchesmono" class="form-control">
+                              <input type="text" name="minRepHexa" placeholder="Hexa" aria-label="mismatchesmono" class="form-control">
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(4)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">D) Size of Flanking Sequences</span>
+                              <input type="text" name="sizeFlan" placeholder="Size of the SSR Flanking Sequences to be extracted" aria-label="mismatchesmono" class="form-control">
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(5)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">E) Generate Alignment</span>
+                              <div class="form-control form-check form-switch">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-check-input" name="genAlin" type="checkbox" role="switch" id="genAlin">
+                                <label class="form-check-label" for="genAlin">Yes</label>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(6)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">F) Generate Text output</span>
+                              <div class="form-control">
+                              <div class="form-check form-switch">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-check-input" name="genText" checked disabled type="checkbox" role="switch" id="genText">
+                                <label class="form-check-label" for="genText">Yes</label>
+                              </div>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(7)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">G) Identify Coding Regions</span>
+                              <div class="form-control form-check form-switch">
+                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input class="form-check-input" name="idCod" type="checkbox" role="switch" id="flexSwitchCheckDefault">
+                                <label class="form-check-label" for="flexSwitchCheckDefault">Yes</label>
+                              </div>
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(8)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">H) dMAX Compound SSR</span>
+                              <div class="form-control">
+                                <input type="range" class="form-range" value="0" min="-1" max="100" name="maxComp" id="customRange">
+                                <br>
+                              </div>
+                              <span class="form-control" id="rangeValue"></span>
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(9)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">I) Standardization Level</span>
+                              <input type="text" placeholder="0=N, 1=lvl 1, 2= lvl 2, 3=lvl 3, F = full" value=3 name="standLevel" aria-label="mismatchesmono" class="form-control">
+                            </div>
+                          </div>
+                          <div class="row align-items-center">
+                            <div class="input-group">
+                              <button type="button" class="btn btn-primary" onClick="showAlert(10)" id="liveToastBtn1"><i class="fa fa-info-circle"></i></button>
+                              <span class="input-group-text">J) SSR types to extract</span>
+                              <div class="form-control form-check form-switch">
+                                <input type="range" class="form-range" value="0" min="0" max="6" name="ssrType" id="customRange2">
+                                <br>
+                              </div>
+                              <span class="form-control" id="rangeValue2"></span>
+                            </div>
+                          </div>
+                          <br>
+                          <hr class="sidebar-divider my-0"><br>
+                        </div>
                         <div class="row align-items-center">
                           <!-- Spinner -->
                           <br><br><br>
@@ -329,7 +466,7 @@
                           <div class="form-group" id="submit">
                             <input class="col-xl-2 col-md-2 mb-1 btn btn-primary btn-user btn-block" type="submit" value="Upload"/>
                           </div>
-                        </div>
+                      </div>
                     </form>
                   </div>
                   <span id="labelbar"></span>
@@ -338,9 +475,9 @@
                   </div>
                   <div>
                     <!-- BOTÃO DE TESTE -->
-                    <div>
+                    {% comment %} <div>
                       <button type="button" class="btn btn-primary" id="upload-btn">Teste Barra</button>
-                    </div> 
+                    </div>  {% endcomment %}
                   </div>
               </div>
               <!-- <button id="upload-btn">Upload</button> -->
@@ -350,6 +487,46 @@
 {% endblock %}
 
 {% block customjs %}
+<script>
+  function showParams(){
+    var valor = document.querySelector('input[name="paramsRadio"]:checked').value;
+    if(valor == 1){
+         $("#custom_params").show();
+     } else {
+         $("#custom_params").hide();
+     };
+    {% comment %} $("#custom_params").toggle("slow"); {% endcomment %}
+  }
+
+  document.querySelectorAll('[input="hide"]').forEach(function(el) {
+    el.addEventListener('click', function() {
+      var target = document.querySelector(this.dataset.target);
+      if (target.style.display === 'none') {
+        target.querySelectorAll('[required]').forEach(function(input) {
+          input.removeAttribute('required');
+        });
+      } else {
+        target.querySelectorAll('[required]').forEach(function(input) {
+          input.setAttribute('required', '');
+        });
+      }
+    });
+  });
+
+  const range = document.getElementById('customRange');
+  const rangeValue = document.getElementById('rangeValue');
+
+  range.addEventListener('input', () => {
+    rangeValue.textContent = range.value;
+  });
+
+  const range2 = document.getElementById('customRange2');
+  const rangeValue2 = document.getElementById('rangeValue2');
+
+  range2.addEventListener('input', () => {
+    rangeValue2.textContent = range2.value;
+  });
+</script>
 <script>
   $(document).on('change', '.file-input', function() {
     var filesCount = $(this)[0].files.length;
@@ -374,6 +551,7 @@
     }
   });
 
+  
   function upload___(){
     var fileInput = document.getElementById('id_fileFasta');
     var files = fileInput.files;
@@ -556,5 +734,80 @@
       }
     });
   }
+
+  function showAlert(btntoast){
+    var toast = document.getElementById('liveToast');
+    var toastHeader = toast.querySelector(".me-auto");
+    var toastBody = toast.querySelector(".toast-body");
+    
+    switch (btntoast) {
+      case 1:
+        toastHeader.innerHTML = 'A) Imperfection Limit/Repeat Unit (mismatches allowed)';
+        toastBody.innerHTML = 'Imperfection Limit of a repeat size (Ex:tri,penta) is the number of point mutations (substitutions and indels) that can be allowed in a repeat unit (word) so that it can be considered as a match. For example, 2 words ATGC and ATGG can be considered as matching repeat units if the imperfection limit (mismatches allowed) for tetranucleotide repeats is set as 1 or more.';
+        break;
+      case 2:
+        toastHeader.innerHTML = 'B) Imperfection Percentage'
+        toastBody.innerHTML = 'Imperfection percentage of a microsatellite repeat tract is the percentage of mismatches in the entire repeat tract. Imperfection Percentage can be calculated as follows:\
+	                            Imperfection  = (No. of imperfections in entire tract / Total No. of Bases in tract) * 100)';
+        break;
+      case 3:
+        toastHeader.innerHTML = 'C) Minimum Repeat Number'
+        toastBody.innerHTML = 'Minimum Repeat Number of a repeat tract is the number of repeat units in a tract so that it can be considered as a valid microsatellite tract.\
+                              For example, if Mininum Repeat Number for mono is set to 15, means that only the mononucleotide repeat tracts that contain at least 15 nucleotides (total lenght) will be considered as a valid tract. Tracts with less than 15 won\'t be considered.';
+        break;
+      case 4:
+        toastHeader.innerHTML = 'D) Size of Flanking Sequences'
+        toastBody.innerHTML = 'The program will also extract the sequence located adjacent to each SSR identified in both left and right sides. Flanking regions are important mainly because knowing their sequences enables researchers to isolate the SSR using polymerase chain reaction, or PCR, amplification.';
+        break;
+      case 5:
+        toastHeader.innerHTML = 'E) Generate Alignment'
+        toastBody.innerHTML = 'Alignment will help identifing imperfections.';
+        break;
+      case 6:
+        toastHeader.innerHTML = 'F) Generate Text output'
+        toastBody.innerHTML = 'Imex has their outputs in TXT and HTML. On "Yes" to generate both and off to generate HTML only (Not Adviseable, if off fastSSR might not work.';
+        break;
+      case 7:
+        toastHeader.innerHTML = 'G) Identify Coding Regions'
+        toastBody.innerHTML = 'Do you wish to Identify Coding/No Coding Regions?';
+        break;
+      case 8:
+        toastHeader.innerHTML = 'H) dMAX Compound SSR'
+        toastBody.innerHTML = 'dMAX : Maximum distance between SSRs allowed to consider as a cSSR\
+                              dMAX is the maximum distance (threshold) between any two SSRs to become a potential Compound SSR. IMEx considers 2 or more SSRs as a single compound SSR if the distance between any two SSRs is less than or equal to the dMAX value set by the user.\
+                              (-1=Do not extract compound SSR; 0-100 dMAX)';
+        break;
+      case 9:
+        toastHeader.innerHTML = 'I) Standardization Level'
+        toastBody.innerHTML = 'The Microsatellites and Compound Microsatellites in IMEx are standardized according to the following Levels. Higher the standardization, more sensitivity and different patterns will be considered the same SSR.\
+                              In L0 (level 0) standardization each pattern is unique. In L1 it is considered the circular permutation of the nucleotides in the repeat. In L2, more patterns become equivalent due to its reverse complementation followed by circular permutation. Furthermore, at L3 level in addition to all the SSRs at level 2, more motifs are considered equivalent because of complementation and circular permutation. In the full standardization mode, plenty SSR are considered equivalent as a consequence of motif reversal followed by its circular permutation.\
+                              (0=N, 1=lvl 1, 2= lvl 2, 3=lvl 3, F = full)")';
+        break;
+      case 10:
+        toastHeader.innerHTML = 'J) SSR types to extract'
+        toastBody.innerHTML = '0=Todos, 1=Only mono, 2=Only di ... 6= Only hexa. Advanced users can also search for specific SSR motifs or patterns.';
+        break;
+      default:
+        console.log(`Sorry, we are out of ${btntoast}.`);
+    }
+    toast.classList.remove('hide');
+    toast.classList.add('show');
+    
+
+
+
+    {% comment %} if (toastTrigger) {
+      toastTrigger.addEventListener('click', function () {
+        toastLiveExample.classList.remove('hide');
+        toastLiveExample.classList.add('show');
+        setTimeout(function() {
+          toastLiveExample.classList.remove('show');
+        }, 3000); 
+        
+      })
+    } {% endcomment %}
+  }
+  
+
 </script>
 {% endblock %}

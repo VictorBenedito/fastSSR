@@ -2,6 +2,7 @@ import os
 import time
 from utils import *
 import sys
+import argparse
 
 inicio = time.time()
 
@@ -26,7 +27,8 @@ def get_parameters():
 
 # ENTRADA DOS PARÂMETROS ==========================================================================================================================
 
-parameters = get_parameters()
+# parameters = get_parameters()
+parameters = ' '.join(sys.argv[2:])
 print (f'Parameters: {parameters}')
 
 # ==========================================================================================================================
